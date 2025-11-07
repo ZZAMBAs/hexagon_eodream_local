@@ -12,6 +12,6 @@ gradle-wrapper.properties
 *.log
 
 # properties
-.properties
-.yml
-.yaml
+*.properties
+*.yml
+*.yaml
