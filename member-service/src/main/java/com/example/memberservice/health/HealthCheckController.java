@@ -1,6 +1,7 @@
 package com.example.memberservice.health;
 
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -8,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api/members")
+@Tag(name="Server 상태 확인 API")
 public class HealthCheckController {
 
 
