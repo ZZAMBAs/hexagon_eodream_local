@@ -7,4 +7,7 @@ public record ContractCreateResponse(
     String code
 ) {
 
+    public static ContractCreateResponse of(String code) {
+        return new ContractCreateResponse(code);
+    }
 }

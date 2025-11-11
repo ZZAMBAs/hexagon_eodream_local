@@ -1,17 +1,16 @@
 package com.example.contractservice.contract.entity;
 
+import com.example.contractservice.common.entity.BaseEntity;
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.common.PaymentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,29 +18,16 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "contracts")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ContractEntity {
+public class ContractEntity extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // BaseEntity
+    @Column(name = "requestor_code", nullable = false, columnDefinition = "CHAR(36)")
+    private String requestorCode;
 
-    @Column(name = "freelancer_code", nullable = false, columnDefinition = "CHAR(36)")
-    private String freelancerCode;
-
-    @Column(name = "client_code", nullable = false, columnDefinition = "CHAR(36)")
-    private String clientCode;
+    @Column(name = "contractor_code", nullable = false, columnDefinition = "CHAR(36)")
+    private String contractorCode;
 
     @Column(name = "code", nullable = false, columnDefinition = "CHAR(36)")
     private String code;
-
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt; // BaseEntity
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt; // BaseEntity
-
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false; // BaseEntity
 
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
@@ -66,4 +52,18 @@ public class ContractEntity {
     @Column(name = "body", nullable = false, columnDefinition = "TEXT")
     private String body;
 
+    @Builder
+    public ContractEntity(String requestorCode, String contractorCode, String code, Instant startedAt, Instant endedAt,
+            PaymentType paymentType, Long unitAmount, ContractStatus status, String name, String body) {
+        this.requestorCode = requestorCode;
+        this.contractorCode = contractorCode;
+        this.code = code;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.paymentType = paymentType;
+        this.unitAmount = unitAmount;
+        this.status = status;
+        this.name = name;
+        this.body = body;
+    }
 }

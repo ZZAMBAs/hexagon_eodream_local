@@ -1,0 +1,45 @@
+package com.example.contractservice.contract.service.mapper;
+
+import com.example.contractservice.contract.domain.Contract;
+import com.example.contractservice.contract.domain.vo.ContractContent;
+import com.example.contractservice.contract.domain.vo.ContractInfo;
+import com.example.contractservice.contract.entity.ContractEntity;
+
+public abstract class ContractMapper {
+
+    private ContractMapper() {}
+
+    public static ContractEntity toEntity(Contract contract) {
+        ContractInfo contractInfo = contract.getInfo();
+        ContractContent contractContent = contract.getContent();
+
+        return ContractEntity.builder()
+                .code(contract.getCode())
+                .requestorCode(contractInfo.requestorCode())
+                .contractorCode(contractInfo.contractorCode())
+                .status(contractInfo.status())
+                .startedAt(contractInfo.startedAt())
+                .endedAt(contractInfo.endedAt())
+                .unitAmount(contractInfo.unitAmount())
+                .paymentType(contractInfo.paymentType())
+                .name(contractContent.name())
+                .body(contractContent.body())
+                .build();
+    }
+
+    public static Contract toDomain(ContractEntity contractEntity) {
+        ContractInfo contractInfo = new ContractInfo(
+                contractEntity.getRequestorCode(),
+                contractEntity.getContractorCode(),
+                contractEntity.getStartedAt(),
+                contractEntity.getEndedAt(),
+                contractEntity.getPaymentType(),
+                contractEntity.getUnitAmount(),
+                contractEntity.getStatus());
+
+        ContractContent contractContent = new ContractContent(contractEntity.getName(), contractEntity.getBody());
+
+        return new Contract(contractEntity.getCode(), contractInfo, contractContent, contractEntity.getCreatedAt(),
+                contractEntity.getUpdatedAt());
+    }
+}

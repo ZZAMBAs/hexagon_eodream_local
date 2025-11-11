@@ -5,8 +5,8 @@ import com.example.contractservice.contract.common.PaymentType;
 import java.time.Instant;
 
 public record ContractInfo(
-    String freelancerCode,
-    String clientCode,
+    String requestorCode,
+    String contractorCode,
     Instant startedAt,
     Instant endedAt,
     PaymentType paymentType,

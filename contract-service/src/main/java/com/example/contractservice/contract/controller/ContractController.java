@@ -1,5 +1,7 @@
 package com.example.contractservice.contract.controller;
 
+import com.example.contractservice.common.ResponseDto;
+import com.example.contractservice.contract.common.PaymentType;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCancelApi;
 import com.example.contractservice.contract.common.swagger.annotation.ContractConfirmApi;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCreateApi;
@@ -12,6 +14,7 @@ import com.example.contractservice.contract.controller.dto.response.ContractCrea
 import com.example.contractservice.contract.controller.dto.response.ContractDetailResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.service.ContractService;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/contracts")
 public class ContractController {
+    private static final int DAYS_OF_MONTH = 30;
 
     private final ContractService contractService;
 
@@ -38,39 +42,42 @@ public class ContractController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<ContractBriefResponse> getContracts(@RequestHeader(name = "X-CODE") String xCode,
-        @RequestParam(value = "cursor-date", required = false) String cursorDate,
-        @RequestParam(value = "cursor-code", required = false) String cursorCode) {
+            @RequestParam(value = "cursor-date", required = false) String cursorDate,
+            @RequestParam(value = "cursor-code", required = false) String cursorCode) {
 
         return List.of(
-            new ContractBriefResponse("클라이언트 이름1", "프리랜서 이름1", Instant.now(), Instant.now(), "PAID",
-                "계약명1"),
-            new ContractBriefResponse("클라이언트 이름2", "프리랜서 이름2", Instant.now(), Instant.now(),
-                "IN_PROGRESS", "계약명2"));
+                new ContractBriefResponse("클라이언트 이름1", "프리랜서 이름1", Instant.now(), Instant.now(), "PAID",
+                        "계약명1"),
+                new ContractBriefResponse("클라이언트 이름2", "프리랜서 이름2", Instant.now(), Instant.now(),
+                        "IN_PROGRESS", "계약명2"));
     }
 
     @GetContractByCodeApi
     @GetMapping("/{code}")
     @ResponseStatus(HttpStatus.OK)
     public ContractDetailResponse getContractByCode(@RequestHeader(name = "X-CODE") String xCode,
-        @PathVariable String code) {
+            @PathVariable String code) {
 
         return new ContractDetailResponse("클라이언트 이름", "프리랜서 이름", Instant.now(), Instant.now(),
-            Instant.now(), "ONE_TIME", "REQUESTED", "계약명", "계약 내용");
+                Instant.now(), "ONE_TIME", "REQUESTED", "계약명", "계약 내용");
     }
 
     @ContractCreateApi
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ContractCreateResponse createContract(@RequestBody ContractCreateRequest request) {
+    public ResponseDto<ContractCreateResponse> requestContract(@RequestHeader(name = "X-CODE") String xCode,
+            @RequestBody ContractCreateRequest request) {
 
-        return new ContractCreateResponse(UUID.randomUUID().toString());
+        validateCreateRequest(xCode, request);
+
+        return ResponseDto.ok(contractService.requestContract(request));
     }
 
     @ContractConfirmApi
     @PostMapping("/{code}/confirm")
     @ResponseStatus(HttpStatus.OK)
     public ContractInfoResponse confirmContract(@RequestHeader(name = "X-CODE") String xCode,
-        @PathVariable String code) {
+            @PathVariable String code) {
 
         return new ContractInfoResponse(UUID.randomUUID().toString(), "CONFIRMED");
     }
@@ -79,7 +86,7 @@ public class ContractController {
     @PostMapping("/{code}/pay")
     @ResponseStatus(HttpStatus.OK)
     public ContractInfoResponse payContract(@RequestHeader(name = "X-CODE") String xCode,
-        @PathVariable String code) {
+            @PathVariable String code) {
 
         return new ContractInfoResponse(UUID.randomUUID().toString(), "PAID");
     }
@@ -88,8 +95,31 @@ public class ContractController {
     @PostMapping("/{code}/cancel")
     @ResponseStatus(HttpStatus.OK)
     public ContractInfoResponse cancelContract(@RequestHeader(name = "X-CODE") String xCode,
-        @PathVariable String code) {
+            @PathVariable String code) {
 
         return new ContractInfoResponse(UUID.randomUUID().toString(), "CANCELLED");
     }
+
+    private boolean canCreateContract(String xCode, ContractCreateRequest request) {
+        return request.contractorCode().equals(xCode) || request.requestorCode().equals(xCode);
+    }
+
+    private void validateCreateRequest(String xCode, ContractCreateRequest request) {
+        if (!canCreateContract(xCode, request)) {
+            throw new IllegalArgumentException("X-CODE 회원 코드는 요청 회원 코드 혹은 요청 성립 회원 코드와 일치해야 합니다.");
+        }
+
+        if (request.startedAt().isAfter(request.endedAt()) || request.startedAt().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("프로젝트 일자 설정이 잘못되었습니다.");
+        }
+
+        long projectDays = Duration.between(request.startedAt(), request.endedAt()).toDays();
+
+        boolean isMonthly = request.paymentType().equals(PaymentType.MONTHLY.name());
+
+        if (projectDays < DAYS_OF_MONTH && isMonthly) {
+            throw new IllegalArgumentException("프로젝트 기간이 짧아 월급 단위 금액으로 생성할 수 없습니다.");
+        }
+    }
+
 }

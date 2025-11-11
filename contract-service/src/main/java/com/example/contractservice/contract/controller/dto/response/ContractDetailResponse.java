@@ -4,10 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
 public record ContractDetailResponse(
-    @Schema(description = "회원 코드", example = "abdd2b21-d2a1-4d89-8271-e9941e7ef93e")
-    String clientName,
-    @Schema(description = "프리랜서(회원) 코드", example = "8172516b-2076-460f-805d-e60cbc0463c7")
-    String freelancerName,
+    @Schema(description = "계약 요청 회원 이름", example = "계약 요청 회원")
+    String requestorName,
+    @Schema(description = "계약 성립자 회원 이름", example = "계약 성립 회원")
+    String contractorName,
     @Schema(description = "계약 생성 일시", example = "2023-08-31T01:07:25.295Z")
     Instant createdAt,
     @Schema(description = "프로젝트 시작일", example = "2023-08-31T01:07:25.295Z")
