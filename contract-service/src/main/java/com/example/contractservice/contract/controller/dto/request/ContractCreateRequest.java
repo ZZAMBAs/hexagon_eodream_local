@@ -21,6 +21,10 @@ public record ContractCreateRequest(
         @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
                 message = "유효한 UUID 형식이어야 합니다.")
         String contractorCode,
+        @Schema(description = "요청자, 성립자 중 프리랜서인 회원 코드 (정산, 결제에 필요한 항목)", example = "abdd2b21-d2a1-4d89-8271-e9941e7ef93e")
+        @Pattern(regexp = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                message = "유효한 UUID 형식이어야 합니다.")
+        String freelancerCode,
         @Schema(description = "프로젝트 시작일", example = "2023-08-31T01:07:25.295Z")
         Instant startedAt,
         @Schema(description = "프로젝트 종료일", example = "2023-08-31T01:07:25.295Z")
@@ -39,7 +43,7 @@ public record ContractCreateRequest(
 ) {
 
     public Contract toContract() {
-        ContractInfo contractInfo = new ContractInfo(requestorCode, contractorCode, startedAt, endedAt,
+        ContractInfo contractInfo = new ContractInfo(requestorCode, contractorCode, freelancerCode, startedAt, endedAt,
                 PaymentType.valueOf(paymentType), unitAmount, ContractStatus.REQUESTED);
         ContractContent contractContent = new ContractContent(name, body);
         Instant nowTime = Instant.now();

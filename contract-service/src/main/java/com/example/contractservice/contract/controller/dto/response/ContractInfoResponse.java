@@ -11,4 +11,7 @@ public record ContractInfoResponse(
     String status
 ) {
 
+    public static ContractInfoResponse of(String code, String status) {
+        return new ContractInfoResponse(code, status);
+    }
 }

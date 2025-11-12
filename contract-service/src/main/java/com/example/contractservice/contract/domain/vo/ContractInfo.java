@@ -7,6 +7,7 @@ import java.time.Instant;
 public record ContractInfo(
     String requestorCode,
     String contractorCode,
+    String freelancerCode,
     Instant startedAt,
     Instant endedAt,
     PaymentType paymentType,
@@ -14,4 +15,8 @@ public record ContractInfo(
     ContractStatus status
 ) {
 
+    public ContractInfo confirm() {
+        return new ContractInfo(requestorCode, contractorCode, freelancerCode, startedAt, endedAt, paymentType,
+                unitAmount, ContractStatus.CONFIRMED);
+    }
 }

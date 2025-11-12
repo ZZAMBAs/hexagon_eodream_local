@@ -51,4 +51,9 @@ public class Contract {
     public Instant getUpdatedAt() {
         return updatedAt;
     }
+
+    public void confirm() {
+        info = info.confirm();
+        updatedAt = Instant.now();
+    }
 }

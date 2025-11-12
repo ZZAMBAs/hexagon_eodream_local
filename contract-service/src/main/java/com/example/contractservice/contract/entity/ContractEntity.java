@@ -26,6 +26,9 @@ public class ContractEntity extends BaseEntity {
     @Column(name = "contractor_code", nullable = false, columnDefinition = "CHAR(36)")
     private String contractorCode;
 
+    @Column(name = "freelancer_code", nullable = false, columnDefinition = "CHAR(36)")
+    private String freelancerCode;
+
     @Column(name = "code", nullable = false, columnDefinition = "CHAR(36)")
     private String code;
 
@@ -53,10 +56,12 @@ public class ContractEntity extends BaseEntity {
     private String body;
 
     @Builder
-    public ContractEntity(String requestorCode, String contractorCode, String code, Instant startedAt, Instant endedAt,
+    public ContractEntity(String requestorCode, String contractorCode, String freelancerCode, String code,
+            Instant startedAt, Instant endedAt,
             PaymentType paymentType, Long unitAmount, ContractStatus status, String name, String body) {
         this.requestorCode = requestorCode;
         this.contractorCode = contractorCode;
+        this.freelancerCode = freelancerCode;
         this.code = code;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
@@ -65,5 +70,18 @@ public class ContractEntity extends BaseEntity {
         this.status = status;
         this.name = name;
         this.body = body;
+    }
+
+    public void updateInfo(Instant startedAt, Instant endedAt, PaymentType paymentType, Long unitAmount,
+            ContractStatus status, String name, String body) {
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.paymentType = paymentType;
+        this.unitAmount = unitAmount;
+        this.status = status;
+        this.name = name;
+        this.body = body;
+
+        touchUpdatedAt();
     }
 }
