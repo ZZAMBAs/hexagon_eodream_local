@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        #messages { border:1px solid #ccc; padding:10px; height:300px; overflow:auto; margin-bottom:10px; }
+        #roomId { width:50px; }
+        #senderId { width:80px; }
+        #messageInput { width:200px; }
+    </style>
+</head>
+<body>
+<h2>Chat Room Test</h2>
+<label>Room ID: <input type="text" id="roomId" value="950"/></label><br><br>
+<label>Sender ID: <input type="text" id="senderId" value="userA"/></label><br><br>
+<div id="messages"></div>
+<input type="text" id="messageInput" placeholder="Type a message" />
+<button id="sendBtn">Send</button>
+
+<script>
+    let stompClient = null;
+    let currentSubscription = null;
+    const messagesDiv = document.getElementById('messages');
+    const roomInput = document.getElementById('roomId');
+    const senderInput = document.getElementById('senderId');
+
+    function appendMessage(text) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        messagesDiv.appendChild(p);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // 1. 구독 처리 로직
+    function subscribeToRoom(roomId) {
+        if (currentSubscription) {
+            currentSubscription.unsubscribe();
+            appendMessage('Unsubscribed from previous room.');
+        }
+
+        currentSubscription = stompClient.subscribe('/queue/room/' + roomId, function(stompMessage) {
+            try {
+                const receivedMsg = JSON.parse(stompMessage.body);
+                const currentSenderId = senderInput.value;
+                let displayPrefix;
+
+                if (receivedMsg.senderId === currentSenderId) {
+                    displayPrefix = 'Me: ';
+                } else {
+                    displayPrefix = receivedMsg.senderId + ': ';
+                }
+
+                appendMessage(displayPrefix + receivedMsg.content);
+
+            } catch(e) {
+                console.error('[DEBUG] Error parsing message:', e);
+                appendMessage('Error parsing message: ' + e);
+            }
+        });
+
+        appendMessage('**Subscribed to room: ' + roomId + '**');
+    }
+
+    // 2. 연결 로직
+    function connect() {
+        appendMessage('Connecting...');
+
+        const socket = new SockJS('http://localhost:8080/chat');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function(frame) {
+            appendMessage('Connected: ' + frame);
+
+            const initialRoomId = roomInput.value;
+            subscribeToRoom(initialRoomId);
+
+        }, function(error) {
+            appendMessage('Error: ' + error);
+        });
+    }
+
+    // 3. 메시지 전송
+    document.getElementById('sendBtn').addEventListener('click', () => {
+        const msg = document.getElementById('messageInput').value;
+        const roomId = roomInput.value;
+        const senderId = senderInput.value;
+
+        if(stompClient && stompClient.connected && msg.trim() !== '') {
+            const payload = {
+                roomId: roomId,
+                senderId: senderId,
+                content: msg
+            };
+
+            stompClient.send('/app/chat.send', {}, JSON.stringify(payload));
+            document.getElementById('messageInput').value = '';
+        } else {
+            appendMessage('Error: Not connected or message is empty.');
+        }
+    });
+
+    // 4. Enter 키로 전송
+    document.getElementById('messageInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('sendBtn').click();
+        }
+    });
+
+    // 5. roomId 변경 시 재구독
+    roomInput.addEventListener('change', () => {
+        const newRoomId = roomInput.value;
+
+        if (stompClient && stompClient.connected) {
+            appendMessage('Room changed, re-subscribing...');
+            subscribeToRoom(newRoomId);
+        } else {
+            appendMessage('STOMP client not connected. Attempting reconnect...');
+            connect();
+        }
+    });
+
+    // 6. 페이지 로드 시 자동 연결
+    console.log('[DEBUG] Setting up load event');
+    window.addEventListener('load', function() {
+        connect();
+    });
+</script>
+</body>
+</html>
