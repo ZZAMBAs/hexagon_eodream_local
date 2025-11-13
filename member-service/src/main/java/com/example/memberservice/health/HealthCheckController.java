@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api/members")
-@Tag(name="Server 상태 확인 API")
+@Tag(name = "Server 상태 확인 API")
 public class HealthCheckController {
 
 

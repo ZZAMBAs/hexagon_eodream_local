@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,10 +25,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Table(name = "social_members")
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+
 public class SocialMembers {
 
     //TODO(이후 common 모듈 생성시 적용)
@@ -66,4 +66,15 @@ public class SocialMembers {
     @Column(name = "provider_id", nullable = false)
     @Comment("OAuth 서버 제공 ID")
     private String providerId;
+
+    @Builder
+    private SocialMembers(String email, Provider provider, String providerId) {
+        this.email = email;
+        this.provider = provider;
+        this.providerId = providerId;
+
+        this.code = UUID.randomUUID().toString();
+        this.isDeleted = false;
+    }
+
 }

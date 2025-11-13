@@ -11,4 +11,6 @@ public record ResponseDto<T>(
 
     @Schema(description = "응답 내용", defaultValue = "XXX")
     T data
-) {}
+) {
+
+}

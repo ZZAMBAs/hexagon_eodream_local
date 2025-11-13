@@ -1,4 +1,4 @@
-package com.example.memberservice.config;
+package com.example.memberservice.common.config;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
