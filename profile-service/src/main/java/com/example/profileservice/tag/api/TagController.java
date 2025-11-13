@@ -1,55 +1,91 @@
 package com.example.profileservice.tag.api;
 
+import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
+import com.example.profileservice.tag.service.TagService;
 import jakarta.validation.Valid;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/tags")
+@RequiredArgsConstructor
 public class TagController implements TagApiController {
 
-    // 임시 Mock 데이터 생성 (Swagger 출력을 위해)
-    private final TagResponse tagSpring = new TagResponse("tag-001", "Spring Boot");
-    private final TagResponse tagJPA = new TagResponse("tag-002", "Java");
-    private final List<TagResponse> mockTags = List.of(tagSpring, tagJPA);
+    // Gateway 환경이 구축되지 않았을 때를 위한 임시 기본값
+    private static final String DEFAULT_MEMBER_CODE = "member-uuid-code-001";
 
+    private final TagService tagService;
+
+    // 전체 태그 목록 조회
     @Override
-    public ResponseEntity<List<TagResponse>> getAllTags() {
-        // TODO: 실제 로직 구현
-        return ResponseEntity.ok(mockTags);
+    @GetMapping
+    public ResponseEntity<ResponseDto<List<TagResponse>>> getAllTags() {
+        List<TagResponse> tags = tagService.getAllTags();
+
+        return ResponseEntity.ok(ResponseDto.success(tags));
     }
 
+    // 새 태그 등록
     @Override
-    public ResponseEntity<TagResponse> createTag(@Valid @RequestBody TagRequest request) {
-        // TODO: 실제 로직 구현
-        // Mock 응답: 생성된 태그의 코드를 반환한다고 가정
-        TagResponse newTag = new TagResponse("tag-999", request.skill());
-        // 새 리소스 생성 시 HTTP 201 Created 반환이 권장됨
-        return ResponseEntity.status(HttpStatus.CREATED).body(newTag);
+    @PostMapping
+    public ResponseEntity<ResponseDto<TagResponse>> createTag(@Valid @RequestBody TagRequest request) {
+        TagResponse newTag = tagService.createTag(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseDto.success(newTag));
     }
 
+    // 회원 태그 목록 조회
     @Override
-    public ResponseEntity<List<TagResponse>> getMyTags() {
-        // TODO: 실제 로직 구현
-        return ResponseEntity.ok(List.of(tagSpring));
+    @GetMapping("/me")
+    public ResponseEntity<ResponseDto<List<TagResponse>>> getMyTags(
+            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode
+    ) {
+        List<TagResponse> myTags = tagService.getMyTags(memberCode);
+
+        return ResponseEntity.ok(ResponseDto.success(myTags));
     }
 
+    // 회원 태그 연결
     @Override
-    public ResponseEntity<Void> linkMemberTag(@PathVariable String tagCode) {
-        // TODO: 실제 로직 구현
-        return ResponseEntity.ok().build();
+    @PostMapping("/{tagCode}/members/me")
+    public ResponseEntity<ResponseDto<Void>> linkMemberTag(@PathVariable String tagCode,
+            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode) {
+        tagService.linkMemberTag(memberCode, tagCode);
+
+        return ResponseEntity.ok(ResponseDto.success());
     }
 
+    // 회원 태그 연결 해제
     @Override
-    public ResponseEntity<Void> unlinkMemberTag(@PathVariable String tagCode) {
-        // TODO: 실제 로직 구현
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/{tagCode}/members/me")
+    public ResponseEntity<ResponseDto<Void>> unlinkMemberTag(@PathVariable String tagCode,
+            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode) {
+        tagService.unlinkMemberTag(memberCode, tagCode);
+
+        return ResponseEntity.ok(ResponseDto.success());
+    }
+
+    // 회원 태그 동기화
+    @Override
+    @PutMapping("/members/me")
+    public ResponseEntity<ResponseDto<Void>> syncMemberTags(
+            @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
+            @RequestBody List<String> tagCodes) {
+        tagService.syncMemberTags(memberCode, tagCodes);
+
+        return ResponseEntity.ok(ResponseDto.success());
     }
 }

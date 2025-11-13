@@ -4,6 +4,8 @@ import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.model.dto.response.RatingResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,12 +19,14 @@ public class RatingController implements RatingApiController {
     private final RatingResponse mockRating = new RatingResponse("member-001", 10, 2);
 
     @Override
+    @GetMapping("/{memberCode}")
     public ResponseEntity<RatingResponse> getMemberRating(@PathVariable String memberCode) {
         // TODO: 실제 로직 구현
         return ResponseEntity.ok(mockRating);
     }
 
     @Override
+    @PatchMapping("/{memberCode}")
     public ResponseEntity<RatingResponse> updateRating(@PathVariable String memberCode,
             @Valid @RequestBody RatingRequest request) {
         // TODO: 실제 로직 구현

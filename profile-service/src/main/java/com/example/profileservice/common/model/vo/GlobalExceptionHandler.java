@@ -1,12 +1,12 @@
 package com.example.profileservice.common.model.vo;
 
-import java.util.stream.Collectors;
+import com.example.profileservice.common.model.vo.exception.CustomException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 /**
  * 모든 Controller에서 발생하는 예외를 처리
@@ -15,52 +15,82 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // @Valid 유효성 검사 실패 시 발생하는 예외 처리 (HTTP 400)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        // 유효성 검사 실패 필드와 메시지를 추출하여 사용자 친화적인 메시지를 구성합니다.
-        String detailedMessage = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> String.format("[%s]: %s", error.getField(), error.getDefaultMessage()))
-                .collect(Collectors.joining(", "));
+    /**
+     * 비즈니스 로직 예외 (CustomException) 처리
+     */
+    @ExceptionHandler(CustomException.class)
+    protected ResponseEntity<ResponseDto<Void>> handleCustomException(CustomException e) {
+        log.error("CustomException Occurred: {} - {}", e.getErrorCode().getCode(), e.getMessage());
 
-        log.warn("Validation Failed: {}", detailedMessage);
+        ErrorCode errorCode = e.getErrorCode();
 
-        // TODO: 나중에 구체적인 ErrorCode를 정의하여 "E_VALID_001" 등 사용 예정
-        ErrorResponse response = ErrorResponse.of(
-                HttpStatus.BAD_REQUEST,
-                "E_VALID_001", // 임시 에러 코드
-                "요청 데이터가 유효하지 않습니다: " + detailedMessage
-        );
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        // CustomException을 ResponseDto의 실패 형태로 변환하여 반환
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ResponseDto.fail(
+                        errorCode.getCode(),
+                        errorCode.getStatus(),
+                        e.getMessage()
+                ));
     }
 
-    // CustomException 처리 (비즈니스 로직 예외)
-//    @ExceptionHandler(CustomException.class)
-//    public ResponseEntity<ErrorResponse> handleCustomException(CustomException ex) {
-//        log.warn("Custom Exception Occurred: Status={}, Message={}", ex.getStatus(), ex.getMessage());
-//
-//        // TODO: 나중에 CustomException의 status와 code를 사용하도록 개선 예정
-//        ErrorResponse response = ErrorResponse.of(
-//                ex.getStatus(),
-//                "E_BIZ_001", // 임시 에러 코드
-//                ex.getMessage()
-//        );
-//
-//        return ResponseEntity.status(ex.getStatus()).body(response);
-//    }
+    /**
+     * @Valid 또는 @Validated를 사용한 입력 값 유효성 검사 실패 시 처리
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<ResponseDto<Void>> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException e) {
+        log.error("MethodArgumentNotValidException Occurred: {}", e.getMessage());
 
-    // 기타 모든 예외 처리 (HTTP 500)
+        final ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
+        // 유효하지 않은 필드와 메시지를 조합하여 상세 에러 메시지 생성
+        final String detailedMessage = String.format("%s (Field: %s)",
+                e.getBindingResult().getFieldError().getDefaultMessage(),
+                e.getBindingResult().getFieldError().getField());
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ResponseDto.fail(
+                        errorCode.getCode(),
+                        errorCode.getStatus(),
+                        detailedMessage
+                ));
+    }
+
+    /**
+     * 404 Not Found (요청 URI에 해당하는 핸들러가 없을 때)
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    protected ResponseEntity<ResponseDto<Void>> handleNoHandlerFoundException(NoHandlerFoundException e) {
+        log.error("NoHandlerFoundException Occurred: {}", e.getMessage());
+
+        final ErrorCode errorCode = ErrorCode.NOT_FOUND_RESOURCE;
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ResponseDto.fail(
+                        errorCode.getCode(),
+                        errorCode.getStatus(),
+                        errorCode.getMessage() + " - " + e.getRequestURL()
+                ));
+    }
+
+
+    /**
+     * 기타 예상치 못한 모든 서버 예외 처리 (500 Internal Server Error)
+     */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        log.error("Internal Server Error: ", ex);
+    protected ResponseEntity<ResponseDto<Void>> handleException(Exception e) {
+        log.error("Unexpected Exception Occurred: {}", e.getMessage(), e);
 
-        ErrorResponse response = ErrorResponse.of(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "E_SERVER_999", // 임시 에러 코드
-                "서버에서 알 수 없는 오류가 발생했습니다."
-        );
+        final ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ResponseDto.fail(
+                        errorCode.getCode(),
+                        errorCode.getStatus(),
+                        errorCode.getMessage()
+                ));
     }
 }

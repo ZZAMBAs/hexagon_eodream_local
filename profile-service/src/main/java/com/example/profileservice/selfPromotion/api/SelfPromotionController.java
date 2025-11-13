@@ -8,7 +8,11 @@ import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,12 +26,14 @@ public class SelfPromotionController implements SelfPromotionApiController {
             "MSA 전문가 찾으세요?", "복잡한 환경 구축 경험 보유", PaymentType.MONTHLY, 5000000L, "res-001", Instant.now(), Instant.now());
 
     @Override
+    @GetMapping("/me")
     public ResponseEntity<List<SelfPromotionResponse>> getMyPromotions() {
         // TODO: 실제 로직 구현
         return ResponseEntity.ok(List.of(mockPromotion));
     }
 
     @Override
+    @PostMapping
     public ResponseEntity<SelfPromotionResponse> createPromotion(
             @Valid @RequestBody SelfPromotionCreateRequest request) {
         // TODO: 실제 로직 구현
@@ -35,12 +41,14 @@ public class SelfPromotionController implements SelfPromotionApiController {
     }
 
     @Override
+    @GetMapping("/{promotionCode}")
     public ResponseEntity<SelfPromotionResponse> getPromotionDetail(@PathVariable String promotionCode) {
         // TODO: 실제 로직 구현
         return ResponseEntity.ok(mockPromotion);
     }
 
     @Override
+    @PatchMapping("/{promotionCode}")
     public ResponseEntity<SelfPromotionResponse> updatePromotion(@PathVariable String promotionCode,
             @Valid @RequestBody SelfPromotionUpdateRequest request) {
         // TODO: 실제 로직 구현
@@ -48,6 +56,7 @@ public class SelfPromotionController implements SelfPromotionApiController {
     }
 
     @Override
+    @DeleteMapping("/{promotionCode}")
     public ResponseEntity<Void> deletePromotion(@PathVariable String promotionCode) {
         // TODO: 실제 로직 구현
         return ResponseEntity.noContent().build();
