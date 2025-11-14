@@ -1,37 +1,87 @@
 package com.example.profileservice.selfPromotion.api;
 
+import com.example.profileservice.common.model.vo.Empty;
+import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionUpdateRequest;
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Tag(name = "Self Promotion API", description = "프리랜서 수주글 관리")
 public interface SelfPromotionApiController {
 
+    // 전체 프로모션 목록 조회
+    @Operation(summary = "전체 프로모션 목록 조회", description = "시스템에 등록된 모든 활성 프로모션 게시글 목록을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "목록 조회 성공")
+    ResponseEntity<ResponseDto<List<SelfPromotionResponse>>> getAllPromotions();
+
     // 내 프로모션 목록 조회
-    @Operation(summary = "내 프로모션 목록 조회", description = "로그인된 프리랜서가 작성한 모든 프로모션 목록을 조회합니다.")
-    ResponseEntity<List<SelfPromotionResponse>> getMyPromotions();
+    @Operation(summary = "내 프로모션 목록 조회", description = "요청 회원이 작성한 모든 활성 프로모션 목록을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "목록 조회 성공")
+    ResponseEntity<ResponseDto<List<SelfPromotionResponse>>> getMyPromotions(
+            @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
+            @RequestHeader(value = "X-CODE") String memberCode);
 
     // 프로모션 등록
     @Operation(summary = "프로모션 등록", description = "새로운 셀프 프로모션 게시글을 등록합니다.")
-    ResponseEntity<SelfPromotionResponse> createPromotion(@Valid @RequestBody SelfPromotionCreateRequest request);
+    @ApiResponse(responseCode = "201", description = "등록 성공")
+    @ApiResponse(responseCode = "400", description = "유효성 검증 실패 또는 유효하지 않은 이력서 코드",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ResponseDto.class),
+                    examples = @ExampleObject(name = "Invalid Resume Code",
+                            value = "{\"code\": 3403, \"httpStatus\": 400, \"message\": \"연결하려는 이력서 코드가 유효하지 않거나 존재하지 않습니다.\", \"data\": null}")))
+    ResponseEntity<ResponseDto<SelfPromotionResponse>> createPromotion(
+            @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
+            @RequestHeader(value = "X-CODE") String memberCode,
+            @Valid @RequestBody SelfPromotionCreateRequest request);
 
     // 프로모션 상세 조회
     @Operation(summary = "프로모션 상세 조회", description = "특정 프로모션 게시글의 상세 정보를 조회합니다.")
-    ResponseEntity<SelfPromotionResponse> getPromotionDetail(@PathVariable String promotionCode);
+    @ApiResponse(responseCode = "200", description = "상세 조회 성공")
+    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ResponseDto.class),
+                    examples = @ExampleObject(name = "Promotion Not Found",
+                            value = "{\"code\": 3401, \"httpStatus\": 404, \"message\": \"요청하신 셀프 프로모션 게시글을 찾을 수 없습니다.\", \"data\": null}")))
+    ResponseEntity<ResponseDto<SelfPromotionResponse>> getPromotionDetail(@PathVariable String promotionCode);
 
     // 프로모션 수정
-    @Operation(summary = "프로모션 수정", description = "특정 프로모션 게시글의 내용을 수정합니다.")
-    ResponseEntity<SelfPromotionResponse> updatePromotion(@PathVariable String promotionCode,
+    @Operation(summary = "프로모션 수정", description = "특정 프로모션 게시글의 내용을 수정합니다. (작성자만 가능)")
+    @ApiResponse(responseCode = "200", description = "수정 성공")
+    @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ResponseDto.class),
+                    examples = @ExampleObject(name = "Unauthorized Access",
+                            value = "{\"code\": 3402, \"httpStatus\": 403, \"message\": \"해당 셀프 프로모션 게시글에 대한 접근 권한이 없습니다.\", \"data\": null}")))
+    ResponseEntity<ResponseDto<SelfPromotionResponse>> updatePromotion(
+            @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
+            @RequestHeader(value = "X-CODE") String memberCode,
+            @PathVariable String promotionCode,
             @Valid @RequestBody SelfPromotionUpdateRequest request);
 
     // 프로모션 삭제
-    @Operation(summary = "프로모션 삭제", description = "특정 프로모션 게시글을 논리적으로 삭제합니다.")
-    ResponseEntity<Void> deletePromotion(@PathVariable String promotionCode);
+    @Operation(summary = "프로모션 삭제", description = "특정 프로모션 게시글을 논리적으로 삭제합니다. (작성자만 가능)")
+    @ApiResponse(responseCode = "200", description = "삭제 성공")
+    @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ResponseDto.class),
+                    examples = @ExampleObject(name = "Unauthorized Access",
+                            value = "{\"code\": 3402, \"httpStatus\": 403, \"message\": \"해당 셀프 프로모션 게시글에 대한 접근 권한이 없습니다.\", \"data\": null}")))
+    ResponseEntity<ResponseDto<Empty>> deletePromotion(
+            @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
+            @RequestHeader(value = "X-CODE") String memberCode,
+            @PathVariable String promotionCode);
 }

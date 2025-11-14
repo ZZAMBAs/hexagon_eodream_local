@@ -49,11 +49,28 @@ public class SelfPromotionEntity extends BaseEntity {
         this.resumeCode = resumeCode;
     }
 
+    // 정적 팩토리 메서드로 생성 로직 캡슐화
+    public static SelfPromotionEntity create(String memberCode, String title, String content, PaymentType paymentType, Long unitAmount, String resumeCode) {
+        return SelfPromotionEntity.builder()
+                .memberCode(memberCode)
+                .title(title)
+                .content(content)
+                .paymentType(paymentType)
+                .unitAmount(unitAmount)
+                .resumeCode(resumeCode)
+                .build();
+    }
+
     public void update(String title, String content, PaymentType paymentType, Long unitAmount, String resumeCode) {
         this.title = title;
         this.content = content;
         this.paymentType = paymentType;
         this.unitAmount = unitAmount;
         this.resumeCode = resumeCode;
+    }
+
+    // 권한 검사 메서드 (BaseEntity.code를 사용)
+    public boolean isOwner(String memberCode) {
+        return this.memberCode.equals(memberCode);
     }
 }

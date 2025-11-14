@@ -26,6 +26,9 @@ public enum ErrorCode {
     UNAUTHORIZED_RESUME_ACCESS(HttpStatus.FORBIDDEN, 3302, "해당 이력서에 대한 접근 권한이 없습니다."),
 
     // 4xx 클라이언트 에러 - selfPromotion (3400 ~ 3499)
+    PROMOTION_NOT_FOUND(HttpStatus.NOT_FOUND, 3401, "요청하신 셀프 프로모션 게시글을 찾을 수 없습니다."),
+    UNAUTHORIZED_PROMOTION_ACCESS(HttpStatus.FORBIDDEN, 3402, "해당 셀프 프로모션 게시글에 대한 접근 권한이 없습니다."),
+    INVALID_RESUME_CODE_LINK(HttpStatus.BAD_REQUEST, 3403, "연결하려는 이력서 코드가 유효하지 않거나 존재하지 않습니다."),
 
     // 4xx 클라이언트 에러 - Tag (3500 ~ 3599)
     TAG_NOT_FOUND(HttpStatus.NOT_FOUND, 3501, "해당 기술 태그를 찾을 수 없습니다."),
