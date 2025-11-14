@@ -1,5 +1,6 @@
 package com.example.profileservice.tag.api;
 
+import com.example.profileservice.common.model.vo.Empty;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
@@ -65,7 +66,7 @@ public interface TagApiController {
                     examples = @ExampleObject(value = "{\"code\": 3503, \"httpStatus\": 409,"
                             + " \"message\": \"이미 연결된 기술 태그입니다.\", \"data\": null}")
             ))
-    ResponseEntity<ResponseDto<Void>> linkMemberTag(@PathVariable String tagCode,
+    ResponseEntity<ResponseDto<Empty>> linkMemberTag(@PathVariable String tagCode,
             @RequestHeader(value = "X-CODE") String memberCode);
 
     // 회원 태그 연결 해제
@@ -77,13 +78,13 @@ public interface TagApiController {
                     examples = @ExampleObject(value = "{\"code\": 3504, \"httpStatus\": 404,"
                             + " \"message\": \"해제할 기술 태그 연결을 찾을 수 없습니다.\", \"data\": null}")
             ))
-    ResponseEntity<ResponseDto<Void>> unlinkMemberTag(@PathVariable String tagCode,
+    ResponseEntity<ResponseDto<Empty>> unlinkMemberTag(@PathVariable String tagCode,
             @RequestHeader(value = "X-CODE") String memberCode);
 
     // 회원 태그 동기화
     @Operation(summary = "회원 태그 목록 동기화", description = "Member 모듈의 요청으로, 회원 프로필의 태그 목록을 요청 List로 일괄 동기화(업데이트)합니다.")
     @ApiResponse(responseCode = "200", description = "태그 목록 동기화 성공")
-    ResponseEntity<ResponseDto<Void>> syncMemberTags(
+    ResponseEntity<ResponseDto<Empty>> syncMemberTags(
             @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
             @RequestHeader(value = "X-CODE") String memberCode,
             @RequestBody List<String> tagCodes);

@@ -15,12 +15,15 @@ public enum ErrorCode {
     INVALID_MEMBER_CODE(HttpStatus.BAD_REQUEST, 3006, "유효하지 않은 사용자 코드입니다."),
 
     // 4xx 클라이언트 에러 - experience (3100 ~ 3199)
+    EXPERIENCE_NOT_FOUND(HttpStatus.NOT_FOUND, 3101, "요청하신 경력/경험 항목을 찾을 수 없습니다."),
+    UNAUTHORIZED_EXPERIENCE_ACCESS(HttpStatus.FORBIDDEN, 3102, "해당 경력/경험 항목에 대한 접근 권한이 없습니다."),
 
     // 4xx 클라이언트 에러 - rating (3200 ~ 3299)
 
 
     // 4xx 클라이언트 에러 - resume (3300 ~ 3399)
-
+    RESUME_NOT_FOUND(HttpStatus.NOT_FOUND, 3301, "요청하신 이력서를 찾을 수 없습니다."),
+    UNAUTHORIZED_RESUME_ACCESS(HttpStatus.FORBIDDEN, 3302, "해당 이력서에 대한 접근 권한이 없습니다."),
 
     // 4xx 클라이언트 에러 - selfPromotion (3400 ~ 3499)
 

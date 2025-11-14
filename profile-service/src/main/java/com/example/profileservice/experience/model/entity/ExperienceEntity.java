@@ -51,11 +51,28 @@ public class ExperienceEntity extends BaseEntity {
         this.endedAt = endedAt;
     }
 
-    public void update(String title, String organization, String description, Instant startedAt, Instant endedAt, String job, String position) {
+    // 정적 팩토리 메서드로 생성 로직 캡슐화
+    public static ExperienceEntity create(String resumeCode, String title, String organization, String description, Instant startedAt, Instant endedAt) {
+        return ExperienceEntity.builder()
+                .resumeCode(resumeCode)
+                .title(title)
+                .organization(organization)
+                .description(description)
+                .startedAt(startedAt)
+                .endedAt(endedAt)
+                .build();
+    }
+
+    public void update(String title, String organization, String description, Instant startedAt, Instant endedAt) {
         this.title = title;
         this.organization = organization;
         this.description = description;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
+    }
+
+    // 경력/경험 항목이 해당 이력서에 속하는지 확인
+    public boolean belongsTo(String resumeCode) {
+        return this.resumeCode.equals(resumeCode);
     }
 }

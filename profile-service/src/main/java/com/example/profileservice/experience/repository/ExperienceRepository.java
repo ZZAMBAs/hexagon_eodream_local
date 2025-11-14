@@ -1,10 +1,17 @@
 package com.example.profileservice.experience.repository;
 
 import com.example.profileservice.experience.model.entity.ExperienceEntity;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ExperienceRepository extends JpaRepository<ExperienceEntity, String> {
+public interface ExperienceRepository extends JpaRepository<ExperienceEntity, Long> {
 
+    // 특정 이력서에 속한 모든 경력/경험 조회 (삭제되지 않은 것만, 시작일 최신순)
+    List<ExperienceEntity> findAllByResumeCodeAndIsDeletedFalseOrderByStartedAtDesc(String resumeCode);
+
+    // experienceCode와 resumeCode를 모두 사용하여 경력/경험 상세 조회 (권한 검증용)
+    Optional<ExperienceEntity> findByCodeAndResumeCodeAndIsDeletedFalse(String experienceCode, String resumeCode);
 }

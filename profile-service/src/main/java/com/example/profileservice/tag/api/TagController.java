@@ -1,5 +1,6 @@
 package com.example.profileservice.tag.api;
 
+import com.example.profileservice.common.model.vo.Empty;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
@@ -61,31 +62,31 @@ public class TagController implements TagApiController {
     // 회원 태그 연결
     @Override
     @PostMapping("/{tagCode}/members/me")
-    public ResponseEntity<ResponseDto<Void>> linkMemberTag(@PathVariable String tagCode,
+    public ResponseEntity<ResponseDto<Empty>> linkMemberTag(@PathVariable String tagCode,
             @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode) {
         tagService.linkMemberTag(memberCode, tagCode);
 
-        return ResponseEntity.ok(ResponseDto.success());
+        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
     }
 
     // 회원 태그 연결 해제
     @Override
     @DeleteMapping("/{tagCode}/members/me")
-    public ResponseEntity<ResponseDto<Void>> unlinkMemberTag(@PathVariable String tagCode,
+    public ResponseEntity<ResponseDto<Empty>> unlinkMemberTag(@PathVariable String tagCode,
             @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode) {
         tagService.unlinkMemberTag(memberCode, tagCode);
 
-        return ResponseEntity.ok(ResponseDto.success());
+        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
     }
 
     // 회원 태그 동기화
     @Override
     @PutMapping("/members/me")
-    public ResponseEntity<ResponseDto<Void>> syncMemberTags(
+    public ResponseEntity<ResponseDto<Empty>> syncMemberTags(
             @RequestHeader(value = "X-CODE", defaultValue = DEFAULT_MEMBER_CODE) String memberCode,
             @RequestBody List<String> tagCodes) {
         tagService.syncMemberTags(memberCode, tagCodes);
 
-        return ResponseEntity.ok(ResponseDto.success());
+        return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
     }
 }
