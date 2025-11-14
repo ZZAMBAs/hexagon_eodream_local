@@ -1,7 +1,7 @@
 package com.example.contractservice.contract.controller.dto.request;
 
 import com.example.contractservice.contract.common.ContractStatus;
-import com.example.contractservice.contract.common.PaymentType;
+import com.example.contractservice.common.PaymentType;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.vo.ContractContent;
 import com.example.contractservice.contract.domain.vo.ContractInfo;

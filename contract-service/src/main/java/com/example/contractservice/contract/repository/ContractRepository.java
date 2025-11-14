@@ -4,6 +4,7 @@ import static com.example.contractservice.contract.domain.exception.ContractErro
 
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.entity.ContractEntity;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,5 +20,9 @@ public class ContractRepository {
     public ContractEntity findByCode(String code) {
         return contractJpaRepository.findByCode(code)
                 .orElseThrow(() -> new ContractException(NO_CONTRACT));
+    }
+
+    public List<ContractEntity> findAllByCodes(List<String> codes) {
+        return contractJpaRepository.findAllByCodes(codes);
     }
 }

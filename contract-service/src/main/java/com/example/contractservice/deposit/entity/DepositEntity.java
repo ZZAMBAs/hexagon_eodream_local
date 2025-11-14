@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,4 +30,14 @@ public class DepositEntity {
     @Column(name = "amount", nullable = false)
     private Long amount;
 
+    @Builder
+    public DepositEntity(String memberCode, String code, Long amount) {
+        this.memberCode = memberCode;
+        this.code = code;
+        this.amount = amount;
+    }
+
+    public void updateInfo(Long amount) {
+        this.amount = amount;
+    }
 }

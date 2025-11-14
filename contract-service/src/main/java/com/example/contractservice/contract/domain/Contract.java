@@ -1,5 +1,6 @@
 package com.example.contractservice.contract.domain;
 
+import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.domain.vo.ContractContent;
 import com.example.contractservice.contract.domain.vo.ContractInfo;
 import java.time.Instant;
@@ -55,5 +56,30 @@ public class Contract {
     public void confirm() {
         info = info.confirm();
         updatedAt = Instant.now();
+    }
+
+    public boolean isConfirmed() {
+        return getInfo().status() == ContractStatus.CONFIRMED;
+    }
+
+    public boolean canUserPay(String userCode) {
+        return isLoginUserInContract(userCode) && !isWorker(userCode);
+    }
+
+    /** 특정 계약에 xCode가 포함되어 있는지 확인
+     */
+    private boolean isLoginUserInContract(String xCode) {
+        return getInfo().requestorCode().equals(xCode) || getInfo().contractorCode().equals(xCode);
+    }
+
+    /**
+     * contract의 freelancer_code가 xCode이면 true, 아니면 false
+     */
+    private boolean isWorker(String xCode) {
+        return getInfo().freelancerCode().equals(xCode);
+    }
+
+    public void pay() {
+        this.info = this.info.pay();
     }
 }

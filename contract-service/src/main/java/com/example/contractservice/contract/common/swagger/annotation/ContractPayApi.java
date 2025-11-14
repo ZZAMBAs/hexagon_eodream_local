@@ -13,8 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Operation(summary = "계약 결제", description = "로그인한 회원이 자신의 계약을 결제")
 @Parameters({
-    @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true),
-    @Parameter(name = "code", description = "결제할 계약 코드", in = ParameterIn.PATH)
+    @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true)
 })
 public @interface ContractPayApi {
 

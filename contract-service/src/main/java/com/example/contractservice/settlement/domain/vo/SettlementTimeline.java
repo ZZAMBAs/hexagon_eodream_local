@@ -8,4 +8,13 @@ public record SettlementTimeline(
     Instant progressingAt
 ) {
 
+    public SettlementTimeline(Instant progressingAt) {
+        this(null, null, progressingAt);
+    }
+
+    public SettlementTimeline(Instant createdAt, Instant settledAt, Instant progressingAt) {
+        this.createdAt = (createdAt == null) ? Instant.now() : createdAt;
+        this.settledAt = settledAt;
+        this.progressingAt = progressingAt;
+    }
 }

@@ -1,7 +1,7 @@
 package com.example.contractservice.contract.domain.vo;
 
 import com.example.contractservice.contract.common.ContractStatus;
-import com.example.contractservice.contract.common.PaymentType;
+import com.example.contractservice.common.PaymentType;
 import java.time.Instant;
 
 public record ContractInfo(
@@ -18,5 +18,10 @@ public record ContractInfo(
     public ContractInfo confirm() {
         return new ContractInfo(requestorCode, contractorCode, freelancerCode, startedAt, endedAt, paymentType,
                 unitAmount, ContractStatus.CONFIRMED);
+    }
+
+    public ContractInfo pay() {
+        return new ContractInfo(requestorCode, contractorCode, freelancerCode, startedAt, endedAt, paymentType,
+                unitAmount, ContractStatus.PAID);
     }
 }

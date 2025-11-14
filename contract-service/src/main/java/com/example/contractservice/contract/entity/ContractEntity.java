@@ -2,7 +2,7 @@ package com.example.contractservice.contract.entity;
 
 import com.example.contractservice.common.entity.BaseEntity;
 import com.example.contractservice.contract.common.ContractStatus;
-import com.example.contractservice.contract.common.PaymentType;
+import com.example.contractservice.common.PaymentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

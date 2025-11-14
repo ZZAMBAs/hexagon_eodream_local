@@ -14,6 +14,10 @@ public class DepositHistory {
 
     private Instant createdAt;
 
+    public DepositHistory(String depositCode, DepositChange depositChange, String summary) {
+        this(null, depositCode, depositChange, summary, null);
+    }
+
     public DepositHistory(String code, String depositCode, DepositChange depositChange,
         String summary, Instant createdAt) {
         this.code = (code == null) ? generateCode() : code;
@@ -21,6 +25,26 @@ public class DepositHistory {
         this.depositChange = depositChange;
         this.summary = summary;
         this.createdAt = (createdAt == null) ? Instant.now() : createdAt;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getDepositCode() {
+        return depositCode;
+    }
+
+    public DepositChange getDepositChange() {
+        return depositChange;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
     private String generateCode() {

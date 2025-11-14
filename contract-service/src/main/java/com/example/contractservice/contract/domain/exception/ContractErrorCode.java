@@ -7,7 +7,10 @@ public enum ContractErrorCode {
 
     NO_CONTRACT(110, "해당 계약이 존재하지 않습니다."), // TODO: 계약 코드를 넣을 수 있도록 개선
     NOT_CONTRACTOR(111, "현재 로그인한 회원이 계약 성립자가 아닙니다."),
-    NOT_REQUESTED_STATUS(112, "요청 상태인 계약만 성립할 수 있습니다.");
+    NOT_REQUESTED_STATUS(112, "요청 상태인 계약만 성립할 수 있습니다."),
+
+    INVALID_PAYMENT_MEMBER(120, "현재 로그인한 회원만이 자신의 계약을 결제할 수 있으며 클라이언트여야 합니다."),
+    NOT_CONFIRMED_STATUS(121, "계약 성사 상태인 계약만 결제할 수 있습니다.");
 
     private final int statusCode;
     private final String message;

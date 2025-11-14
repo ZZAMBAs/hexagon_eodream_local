@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -56,4 +57,15 @@ public class SettlementEntity {
     @Column(name = "settlement_rate", precision = 5, scale = 2)
     private BigDecimal settlementRate;
 
+    @Builder
+    public SettlementEntity(String code, String receiverCode, String contractCode, Long originalAmount,
+            SettlementStatus status, Instant progressingAt, Instant createdAt) {
+        this.code = code;
+        this.receiverCode = receiverCode;
+        this.contractCode = contractCode;
+        this.originalAmount = originalAmount;
+        this.status = status;
+        this.progressingAt = progressingAt;
+        this.createdAt = createdAt;
+    }
 }

@@ -1,7 +1,7 @@
 package com.example.contractservice.contract.controller;
 
 import com.example.contractservice.common.ResponseDto;
-import com.example.contractservice.contract.common.PaymentType;
+import com.example.contractservice.common.PaymentType;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCancelApi;
 import com.example.contractservice.contract.common.swagger.annotation.ContractConfirmApi;
 import com.example.contractservice.contract.common.swagger.annotation.ContractCreateApi;
@@ -9,12 +9,14 @@ import com.example.contractservice.contract.common.swagger.annotation.ContractPa
 import com.example.contractservice.contract.common.swagger.annotation.GetContractByCodeApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractsApi;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
+import com.example.contractservice.contract.controller.dto.request.ContractPayRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractDetailResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractConfirmRequest;
+import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -86,12 +88,14 @@ public class ContractController {
     }
 
     @ContractPayApi
-    @PostMapping("/{code}/pay")
+    @PostMapping("/pay")
     @ResponseStatus(HttpStatus.OK)
-    public ContractInfoResponse payContract(@RequestHeader(name = "X-CODE") String xCode,
-            @PathVariable String code) {
+    public ResponseDto<List<ContractInfoResponse>> payContract(@RequestHeader(name = "X-CODE") String xCode,
+            @RequestBody ContractPayRequest request) {
 
-        return new ContractInfoResponse(UUID.randomUUID().toString(), "PAID");
+        ContractPayProcessRequest serviceRequest = new ContractPayProcessRequest(xCode, request.codes());
+
+        return ResponseDto.ok(contractService.payContracts(serviceRequest));
     }
 
     @ContractCancelApi
