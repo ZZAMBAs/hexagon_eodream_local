@@ -1,8 +1,9 @@
 package com.example.searchservice.tag.service;
 
-import com.example.searchservice.tag.dto.TagDto;
+import com.example.searchservice.tag.dto.TagResponseDto;
 import java.util.List;
 
 public interface TagService {
-    public List<TagDto> getSuggestions(String prefix, int size);
+    public List<TagResponseDto> getSuggestions(String prefix, int size);
 }
+

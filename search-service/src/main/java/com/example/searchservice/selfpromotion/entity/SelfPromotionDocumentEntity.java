@@ -11,27 +11,32 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.Setting;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(indexName = "self_promotions", createIndex = false)
+@Document(indexName = "self_promotions")
+@Setting(settingPath = "/elasticsearch/self-promotions-settings.json")
 public class SelfPromotionDocumentEntity {
 
     @Id
     private String code;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer")
     private String title;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer")
     private String content;
+
+    @Field(type = FieldType.Keyword)
+    private String memberCode;
 
     @Field(type = FieldType.Keyword, name = "member_nickname")
     private String memberNickname;
 
-    @Field(type = FieldType.Date, format = DateFormat.strict_date_optional_time_nanos, name = "updated_at")
+    @Field(type = FieldType.Date, format = DateFormat.date_time, name = "updated_at")
     private Instant updatedAt;
 }
