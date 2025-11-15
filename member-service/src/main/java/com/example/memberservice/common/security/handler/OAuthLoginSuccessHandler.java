@@ -1,6 +1,9 @@
 package com.example.memberservice.common.security.handler;
 
+
+import com.example.memberservice.common.exception.BusinessException;
 import com.example.memberservice.common.redis.service.RedisSingleDataService;
+import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
 import com.example.memberservice.common.security.model.dto.CustomOAuth2UserDto;
 import com.example.memberservice.common.web.CookieGenerator;
@@ -32,14 +35,15 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
 
     private final OAuthLoginFailureHandler oAuthLoginFailureHandler;
 
-    @Value("${jwt.refresh-token.ttl}")
-    private Long refreshTokenTtl;
+
+    private final JwtProperties jwtProperties;
 
     @Value("${redirect-url.login.success}")
     private String successRedirectUrl;
 
     @Value("${redirect-url.login.need-signup}")
     private String needSignUpRedirectUrl;
+
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -55,13 +59,11 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
 
         log.info("TOKEN:%s".formatted(memberCode));
         try {
-            if (0 == redisSingleDataService.setSingleData(memberCode, refreshToken, refreshTokenTtl)) {
-                //TODO redis refeshToken 저장에 실패했다.
-                throw new IOException();
-            }
-        } catch (IOException e) {
+            redisSingleDataService.setSingleData(memberCode, refreshToken, jwtProperties.getRefreshTokenTtl());
+
+        } catch (BusinessException e) {
             oAuthLoginFailureHandler.onAuthenticationFailure(request, response,
-                new AuthenticationServiceException("Redis가 불안정합니다.", e));
+                new AuthenticationServiceException(e.getBusinessCode().getMessage(), e));
 
             return;
         }
@@ -70,13 +72,15 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
 
         //소셜로그인에 회원가입까지 완료했다면
         if (memberJpaRepository.existsByCode(memberCode)) {
+
             redirectUri = successRedirectUrl;
         } else {
             redirectUri = needSignUpRedirectUrl;
         }
 
         response.addHeader(HttpHeaders.SET_COOKIE, CookieGenerator.createCookies("RefreshToken", refreshToken,
-            TimeUnit.MILLISECONDS.toSeconds(refreshTokenTtl)));
+            TimeUnit.MILLISECONDS.toSeconds(jwtProperties.getRefreshTokenTtl())));
+
         response.sendRedirect(redirectUri);
     }
 }

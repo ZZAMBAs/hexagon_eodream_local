@@ -1,5 +1,6 @@
 package com.example.memberservice.member.controller.swagger;
 
+import com.example.memberservice.common.model.vo.Empty;
 import com.example.memberservice.common.model.vo.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.UserCreateRequest;
 import com.example.memberservice.member.controller.dto.request.UserUpdateRequest;
@@ -32,30 +33,30 @@ public interface MemberApiControllerSwagger {
     @Parameters({
         @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true)
     })
-    ResponseEntity<ResponseDto<Null>> createUser(@RequestBody UserCreateRequest request);
+    ResponseEntity<ResponseDto<Empty>> createUser(@RequestBody UserCreateRequest request);
 
     @Operation(summary = "사용자 정보 수정", description = "사용자 정보를 수정합니다.")
     @Parameters({
         @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true)
     })
-    ResponseEntity<ResponseDto<Null>> updateUser(@RequestBody UserUpdateRequest request);
+    ResponseEntity<ResponseDto<Empty>> updateUser(@RequestBody UserUpdateRequest request);
 
     @Operation(summary = "사용자 판매자 등록", description = "사용자의 판매자 등록을 진행합니다")
     @Parameters({
         @Parameter(name = "X-CODE",description = "로그인한 사용자 코드",in = ParameterIn.HEADER, required = true)
     })
-    ResponseEntity<ResponseDto<Null>> updateUserWorkState(@RequestHeader("X-CODE") String memberCode);
+    ResponseEntity<ResponseDto<Empty>> updateUserWorkState(@RequestHeader("X-CODE") String memberCode);
 
     @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다.")
     @Parameters({
         @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true)
     })
-    ResponseEntity<ResponseDto<Null>> deleteUser();
+    ResponseEntity<ResponseDto<Empty>> deleteUser();
 
     @Operation(summary = "사용자 이름 중복 체크", description = "사용자 이름이 이미 존재하는지 확인합니다.")
     @Parameters({
         @Parameter(name = "X-CODE", description = "로그인 사용자 코드", in = ParameterIn.HEADER, required = true),
         @Parameter(name = "name", description = "체크할 사용자 이름", in = ParameterIn.QUERY, required = true)
     })
-    ResponseEntity<Null> existMemberByName(@RequestParam(name = "name") String name);
+    ResponseEntity<Empty> existMemberByName(@RequestParam(name = "name") String name);
 }

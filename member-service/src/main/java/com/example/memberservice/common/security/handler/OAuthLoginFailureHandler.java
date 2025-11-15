@@ -1,5 +1,8 @@
 package com.example.memberservice.common.security.handler;
 
+
+import com.example.memberservice.common.exception.BusinessCode;
+import com.example.memberservice.common.model.vo.Empty;
 import com.example.memberservice.common.model.vo.ResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -19,8 +22,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OAuthLoginFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
+
     @Value("${redirect-url.login.failure}")
     private String failureRedirectUrl;
+
     private final ObjectMapper om;
 
     @Override
@@ -30,9 +35,11 @@ public class OAuthLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
 
-        ResponseDto<Null> responseBody = new ResponseDto<>(401, "로그인에 실패하였습니다.", null);
+
+        ResponseDto<Null> responseBody = new ResponseDto<>(401, 401, null,null);
 
         response.sendRedirect(failureRedirectUrl);
+
         response.getWriter().write(om.writeValueAsString(responseBody));
     }
 }

@@ -24,6 +24,7 @@ public class NaverUserInfo implements OAuthUserInfo {
     @Override
     public String getEmail() {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+
         Object emailObject = response.get("email");
         if (emailObject == null) {
             throw new IllegalArgumentException("Email not found in attributes");

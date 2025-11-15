@@ -1,33 +1,59 @@
 package com.example.memberservice.oauth.controller;
 
-import com.example.memberservice.common.model.vo.ResponseDto;
+import com.example.memberservice.common.exception.BusinessException;
+import com.example.memberservice.common.exception.BusinessCode;
+import com.example.memberservice.common.security.jwt.JwtProperties;
+import com.example.memberservice.common.web.CookieGenerator;
 import com.example.memberservice.oauth.controller.swagger.OAuthApiControllerSwagger;
-import jakarta.validation.constraints.Null;
-import org.springframework.http.ResponseEntity;
+import com.example.memberservice.oauth.service.OAuthService;
+import com.example.memberservice.oauth.service.dto.output.TokensOutput;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class OAuthApiController implements OAuthApiControllerSwagger {
 
+    private final OAuthService oAuthService;
+
+    private final JwtProperties jwtProperties;
 
     @PostMapping("/reissue")
-    public ResponseEntity<ResponseDto<Null>> reissueAccessTokenByRefreshToken(
-        @CookieValue("refresh-token") String refreshToken) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reissueAccessTokenByRefreshToken(
+        HttpServletResponse httpServletResponse,
+        @CookieValue(name = "refresh-token", required = false) String refreshToken) {
 
-        return null;
+        if (refreshToken == null) {
+            throw new BusinessException(BusinessCode.UNAUTHORIZATION);
+        }
+
+        TokensOutput output = oAuthService.reissueAccessTokenByRefreshToken(refreshToken);
+
+        httpServletResponse.setHeader(HttpHeaders.AUTHORIZATION, "Bearer "+output.accessToken());
+        httpServletResponse.setHeader(HttpHeaders.SET_COOKIE,
+            CookieGenerator.createCookies("refresh-token", output.refreshToken(),
+                TimeUnit.MILLISECONDS.toSeconds(jwtProperties.getRefreshTokenTtl())));
+
     }
 
 
     @DeleteMapping("/logout")
-    public ResponseEntity<ResponseDto<Null>> logoutMemberByRefreshToken(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logoutMemberByRefreshToken(
         @CookieValue("refresh-token") String refreshToken) {
 
-        return null;
+        oAuthService.deleteRefreshTokenToRedis(refreshToken);
     }
 
 }

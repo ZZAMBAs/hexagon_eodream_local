@@ -1,5 +1,6 @@
 package com.example.memberservice.member.controller;
 
+import com.example.memberservice.common.model.vo.Empty;
 import com.example.memberservice.common.model.vo.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.UserCreateRequest;
 import com.example.memberservice.member.controller.dto.request.UserUpdateRequest;
@@ -46,35 +47,35 @@ public class MemberApiController implements MemberApiControllerSwagger {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ResponseDto<Null>> createUser(@RequestBody UserCreateRequest request) {
+    public ResponseEntity<ResponseDto<Empty>> createUser(@RequestBody UserCreateRequest request) {
 
-        return ResponseEntity.status(200).body(new ResponseDto<>(200, "sss", null));
+        return ResponseEntity.status(200).body(new ResponseDto<>(200,200, "요청에 성공적입니다.",Empty.getInstance()));
     }
 
     @PatchMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Null>> updateUser(@RequestBody UserUpdateRequest request) {
+    public ResponseEntity<ResponseDto<Empty>> updateUser(@RequestBody UserUpdateRequest request) {
 
         return null;
     }
 
     @PatchMapping("/state")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Null>> updateUserWorkState(@RequestHeader("X-CODE") String memberCode) {
+    public ResponseEntity<ResponseDto<Empty>> updateUserWorkState(@RequestHeader("X-CODE") String memberCode) {
 
         return null;
     }
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Null>> deleteUser() {
+    public ResponseEntity<ResponseDto<Empty>> deleteUser() {
 
         return null;
     }
 
     @GetMapping("/check-name")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Null> existMemberByName(@RequestParam(name = "name") String name) {
+    public ResponseEntity<Empty> existMemberByName(@RequestParam(name = "name") String name) {
 
         return null;
     }
