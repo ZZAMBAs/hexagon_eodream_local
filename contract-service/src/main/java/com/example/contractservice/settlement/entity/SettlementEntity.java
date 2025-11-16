@@ -68,4 +68,11 @@ public class SettlementEntity {
         this.progressingAt = progressingAt;
         this.createdAt = createdAt;
     }
+
+    public void updateInfo(Long settledAmount, BigDecimal settlementRate, Instant settledAt, SettlementStatus status) {
+        this.settledAmount = settledAmount;
+        this.settlementRate = settlementRate;
+        this.settledAt = settledAt;
+        this.status = status;
+    }
 }

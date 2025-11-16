@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
@@ -27,7 +28,7 @@ public class BaseEntity {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt; // BaseEntity
 
-    @CreatedDate
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt; // BaseEntity
 

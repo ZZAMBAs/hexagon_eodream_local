@@ -1,4 +1,4 @@
-package com.example.contractservice.config;
+package com.example.contractservice.common.config;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;

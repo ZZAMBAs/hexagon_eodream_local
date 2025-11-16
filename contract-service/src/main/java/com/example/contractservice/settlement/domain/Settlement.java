@@ -3,6 +3,8 @@ package com.example.contractservice.settlement.domain;
 import com.example.contractservice.settlement.domain.vo.SettlementReference;
 import com.example.contractservice.settlement.domain.vo.SettlementStatusInfo;
 import com.example.contractservice.settlement.domain.vo.SettlementTimeline;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public class Settlement {
@@ -24,6 +26,11 @@ public class Settlement {
         this.settlementReference = settlementReference;
         this.settlementStatusInfo = settlementStatusInfo;
         this.settlementTimeline = settlementTimeline;
+    }
+
+    public void settle(BigDecimal settlementRate) {
+        this.settlementStatusInfo = settlementStatusInfo.settle(settlementRate);
+        this.settlementTimeline = settlementTimeline.updateSettledAt(Instant.now());
     }
 
     public String getCode() {

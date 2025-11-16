@@ -17,4 +17,8 @@ public record SettlementTimeline(
         this.settledAt = settledAt;
         this.progressingAt = progressingAt;
     }
+
+    public SettlementTimeline updateSettledAt(Instant curSettledAt) {
+        return new SettlementTimeline(createdAt, curSettledAt, progressingAt);
+    }
 }

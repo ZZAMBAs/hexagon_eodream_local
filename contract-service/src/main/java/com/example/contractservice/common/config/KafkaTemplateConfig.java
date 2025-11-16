@@ -1,4 +1,4 @@
-package com.example.contractservice.config;
+package com.example.contractservice.common.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;

@@ -8,7 +8,7 @@ import com.example.contractservice.deposit.domain.DepositHistory;
 import com.example.contractservice.deposit.entity.DepositEntity;
 import com.example.contractservice.deposit.entity.DepositHistoryEntity;
 import com.example.contractservice.deposit.repository.DepositRepository;
-import com.example.contractservice.deposit.service.dto.request.DepositWithdrawRequest;
+import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
 import com.example.contractservice.deposit.service.dto.response.DepositWithdrawResponse;
 import com.example.contractservice.deposit.service.mapper.DepositHistoryMapper;
 import com.example.contractservice.deposit.service.mapper.DepositMapper;
@@ -30,7 +30,7 @@ public class DepositService {
      * 3. 변동된 예치금을 바탕으로 예치금 내역을 만들고 저장한다. </br>
      */
     @Transactional
-    public DepositWithdrawResponse process(DepositWithdrawRequest request, BiConsumer<Deposit, Long> action) {
+    public DepositWithdrawResponse process(DepositProcessRequest request, BiConsumer<Deposit, Long> action) {
         DepositEntity depositEntity = depositRepository.findDepositByMemberCode(request.memberCode());
         Deposit deposit = toDomain(depositEntity);
 
@@ -47,7 +47,7 @@ public class DepositService {
                 depositEntity.getAmount());
     }
 
-    private void saveHistory(DepositWithdrawRequest request, Deposit deposit, Long changeAmount) {
+    private void saveHistory(DepositProcessRequest request, Deposit deposit, Long changeAmount) {
         DepositHistory depositHistory = DepositHistoryMapper.toDomain(deposit, changeAmount, request.summary());
         DepositHistoryEntity depositHistoryEntity = toEntity(depositHistory);
 
@@ -58,5 +58,11 @@ public class DepositService {
      */
     public void withdraw(Deposit deposit, Long amount) {
         deposit.withdraw(amount);
+    }
+
+    /** 입금 action
+     */
+    public void transfer(Deposit deposit, Long amount) {
+        deposit.transfer(amount);
     }
 }

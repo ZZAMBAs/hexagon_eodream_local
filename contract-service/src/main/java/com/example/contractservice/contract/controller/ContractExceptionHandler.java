@@ -1,5 +1,6 @@
 package com.example.contractservice.contract.controller;
 
+import com.example.contractservice.common.Empty;
 import com.example.contractservice.common.ResponseDto;
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.domain.exception.ContractErrorCode;
@@ -12,11 +13,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ContractExceptionHandler {
 
     @ExceptionHandler(ContractException.class)
-    public ResponseEntity<ResponseDto<Void>> handleContractCreateException(ContractException e) {
+    public ResponseEntity<ResponseDto<Empty>> handleContractCreateException(ContractException e) {
         ContractErrorCode errorCode = e.getErrorCode();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseDto<>(errorCode.getStatusCode(), errorCode.getMessage(), null));
+                .body(new ResponseDto<>(errorCode.getStatusCode(), errorCode.getHttpStatusCode(), errorCode.getMessage(), Empty.getInstance()));
     }
 
 }

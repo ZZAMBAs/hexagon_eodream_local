@@ -19,7 +19,7 @@ import com.example.contractservice.contract.service.dto.response.MemberInfoRespo
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.example.contractservice.contract.service.mapper.ContractSettlementMapper;
-import com.example.contractservice.deposit.service.dto.request.DepositWithdrawRequest;
+import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
 import com.example.contractservice.deposit.service.DepositService;
 import com.example.contractservice.settlement.service.SettlementService;
 import com.example.contractservice.settlement.service.dto.request.SettlementSaveRequest;
@@ -188,8 +188,8 @@ public class ContractService {
                 .map(contract -> contract.getInfo().unitAmount())
                 .reduce(0L, Long::sum); // 총 금액
 
-        DepositWithdrawRequest depositWithdrawRequest = new DepositWithdrawRequest(request.xCode(), totalAmount, PAYMENT_COMMENT);
-        depositService.process(depositWithdrawRequest, depositService::withdraw);
+        DepositProcessRequest depositProcessRequest = new DepositProcessRequest(request.xCode(), totalAmount, PAYMENT_COMMENT);
+        depositService.process(depositProcessRequest, depositService::withdraw);
     }
 
     private void saveSettlements(List<Contract> contracts) {
