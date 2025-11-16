@@ -1,0 +1,29 @@
+package com.example.gatewayservice.common.jwt;
+
+import com.example.gatewayservice.common.exception.BusinessException;
+import com.example.gatewayservice.common.exception.ErrorCode;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class JwtTokenValidator {
+
+    private final JwtKeyProvider jwtKeyProvider;
+
+    //AccessToken의 검증은 Api Gateway에서 일어나기 떄문에 Member 모듈에서는 AccessToken 검증은 생략
+    public Claims validateAccessToken(String token) {
+        try {
+            return Jwts.parser()
+                .verifyWith(jwtKeyProvider.getAccessTokenSignKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        } catch (JwtException e) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
+        }
+    }
+}
