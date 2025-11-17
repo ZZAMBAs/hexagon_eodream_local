@@ -37,7 +37,7 @@ public abstract class SettlementMapper {
         SettlementStatusInfo statusInfo = getStatusInfo(request.amount());
 
         return switch (request.paymentType()) {
-            case ONE_TIME -> getDomain(request, reference, statusInfo);
+            case PER_JOB -> getDomain(request, reference, statusInfo);
             case MONTHLY -> getDomains(request, reference);
         };
     }
