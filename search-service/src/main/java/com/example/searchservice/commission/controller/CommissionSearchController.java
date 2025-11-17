@@ -1,31 +1,53 @@
 package com.example.searchservice.commission.controller;
 
 import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.commission.dto.CommissionResponseDto;
+import com.example.searchservice.commission.service.CommissionService;
+import com.example.searchservice.common.response.BaseResponse;
 import com.example.searchservice.common.vo.SearchScope;
 import com.example.searchservice.commission.controller.swagger.CommissionSearchControllerSwagger;
 import java.time.LocalDate;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/search/commissions")
+@RequiredArgsConstructor
 public class CommissionSearchController implements CommissionSearchControllerSwagger {
 
+    private final CommissionService commissionService;
+
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> search(String q, SearchScope scope, List<String> tags, PaymentType paymentType,
-            Long minPay, LocalDate startedAt, LocalDate endedAt, int page, int size) {
-        return null;
+    public BaseResponse<Page<CommissionResponseDto>> search(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "all") SearchScope scope,
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(name = "payment-type", required = false) PaymentType paymentType,
+            @RequestParam(name = "min-pay", required = false) Long minPay,
+            @RequestParam(name = "started-at", required = false) LocalDate startedAt,
+            @RequestParam(name = "ended-at", required = false) LocalDate endedAt,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+
+        Page<CommissionResponseDto> result;
+
+        result = commissionService.search(query, scope, page, size);
+
+        return BaseResponse.ok(result);
     }
 
     @GetMapping("/suggest")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> suggest(String q, int size) {
+    public BaseResponse<CommissionResponseDto> suggest(String query, int size) {
         return null;
     }
 }
