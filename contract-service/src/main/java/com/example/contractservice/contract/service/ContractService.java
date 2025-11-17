@@ -5,6 +5,7 @@ import static com.example.contractservice.contract.service.mapper.ContractMapper
 
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
+import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.domain.Contract;
@@ -24,10 +25,13 @@ import com.example.contractservice.deposit.service.DepositService;
 import com.example.contractservice.settlement.service.SettlementService;
 import com.example.contractservice.settlement.service.dto.request.SettlementSaveRequest;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -52,6 +56,32 @@ public class ContractService {
 
     @Value("${module.member.application.path.member-info}")
     private String memberInfoUrl;
+
+    public List<ContractBriefWithNicknameResponse> getBriefInfos(List<String> codes) {
+        // 코드를 기반으로 모든 ContractEntity를 한 번에 조회
+        List<ContractEntity> contractEntities = contractRepository.findAllByCodes(codes);
+
+        if (contractEntities.isEmpty()) { // 없다면 조기 종료로 네트워크 통신 방지
+            return Collections.emptyList();
+        }
+
+        // 계약 목록에서 요청자(requestor)와 계약자(contractor)의 code를 모두 수집 (중복 제거)
+        Set<String> memberCodes = contractEntities.stream()
+                .flatMap(entity -> Stream.of(entity.getRequestorCode(), entity.getContractorCode()))
+                .collect(Collectors.toSet());
+
+        // member 모듈로부터 정보 가져오기
+        URI memberInfoUri = createMemberInfoUrl(memberCodes.stream().toList());
+        List<MemberInfo> memberInfos = Optional.ofNullable(restTemplate.getForObject(memberInfoUri, MemberInfoResponse.class))
+                .orElseThrow(() -> new ContractException(INVALID_MEMBER))
+                .members();
+        Map<String, String> membersByCode = memberInfos.stream()
+                .collect(Collectors.toMap(MemberInfo::code, MemberInfo::name)); // code별로 info 분류
+
+        return contractEntities.stream()
+                .map(contractEntity -> convertToBriefResponse(contractEntity, membersByCode))
+                .toList();
+    }
 
     @Transactional
     public ContractCreateResponse requestContract(ContractCreateRequest request) {
@@ -104,9 +134,18 @@ public class ContractService {
                 .toList();
     }
 
+    private ContractBriefWithNicknameResponse convertToBriefResponse(ContractEntity contractEntity,
+            Map<String, String> membersByCode) {
+        return ContractBriefWithNicknameResponse.of(
+                contractEntity,
+                membersByCode.get(contractEntity.getRequestorCode()),
+                membersByCode.get(contractEntity.getContractorCode())
+        );
+    }
+
     private void isValidMember(List<String> memberCodes) {
-        URI memberExistsUrl = createMemberInfoUrl(memberCodes);
-        MemberInfoResponse memberInfoResponse = Optional.ofNullable(restTemplate.getForObject(memberExistsUrl, MemberInfoResponse.class))
+        URI memberInfoUri = createMemberInfoUrl(memberCodes);
+        MemberInfoResponse memberInfoResponse = Optional.ofNullable(restTemplate.getForObject(memberInfoUri, MemberInfoResponse.class))
                 .orElseThrow(() -> new ContractException(INVALID_MEMBER));
 
         List<MemberInfo> memberInfos = memberInfoResponse.members();

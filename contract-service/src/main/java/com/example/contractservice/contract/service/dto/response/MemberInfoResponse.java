@@ -8,6 +8,7 @@ public record MemberInfoResponse(
 
     public record MemberInfo (
             String code,
+            String name,
             Boolean canWork
     ) {}
 }

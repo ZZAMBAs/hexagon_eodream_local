@@ -4,7 +4,7 @@ import com.example.contractservice.common.ResponseDto;
 import com.example.contractservice.contract.common.swagger.annotation.ContractPayApi;
 import com.example.contractservice.contract.common.swagger.annotation.GetContractInternalApi;
 import com.example.contractservice.contract.controller.dto.request.ContractPayRequest;
-import com.example.contractservice.contract.controller.dto.response.ContractBriefResponse;
+import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.service.ContractService;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
@@ -12,17 +12,17 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/internal/contracts")
+@RequestMapping("/internal/contracts")
 public class ContractInternalController {
     private final ContractService contractService;
 
@@ -38,11 +38,11 @@ public class ContractInternalController {
     }
 
     @GetContractInternalApi
-    @GetMapping("/{code}")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
-    public ContractBriefResponse getBriefInfo(@PathVariable String code) {
+    public ResponseDto<List<ContractBriefWithNicknameResponse>> getBriefInfo(@RequestParam(name = "code") List<String> codes) {
 
-        throw new UnsupportedOperationException(); // 임시 조치
+        return ResponseDto.ok(contractService.getBriefInfos(codes));
     }
 
 }
