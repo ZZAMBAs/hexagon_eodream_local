@@ -1,15 +1,13 @@
 package com.example.memberservice.member.controller;
 
-import com.example.memberservice.common.model.vo.Empty;
-import com.example.memberservice.common.model.vo.ResponseDto;
+import com.example.memberservice.common.web.model.vo.Empty;
+import com.example.memberservice.common.web.model.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.request.UserCreateRequest;
 import com.example.memberservice.member.controller.dto.request.UserUpdateRequest;
 import com.example.memberservice.member.controller.dto.response.UserGetResponse;
 import com.example.memberservice.member.controller.swagger.MemberApiControllerSwagger;
 import com.example.memberservice.member.service.MemberService;
-import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,7 +37,7 @@ public class MemberApiController implements MemberApiControllerSwagger {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<ResponseDto<UserGetResponse>> getMemberById(
+    public ResponseDto<UserGetResponse> getMemberById(
         @RequestParam(name = "member-code", required = false) String memberCode) {
 
         return null;
@@ -47,37 +45,37 @@ public class MemberApiController implements MemberApiControllerSwagger {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ResponseDto<Empty>> createUser(@RequestBody UserCreateRequest request) {
+    public ResponseDto<Empty> createUser(@RequestBody UserCreateRequest request) {
 
-        return ResponseEntity.status(200).body(new ResponseDto<>(200,200, "요청에 성공적입니다.",Empty.getInstance()));
+        return ResponseDto.success(HttpStatus.CREATED.value());
     }
 
     @PatchMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Empty>> updateUser(@RequestBody UserUpdateRequest request) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Empty> updateUser(@RequestBody UserUpdateRequest request) {
 
-        return null;
+        return ResponseDto.success();
     }
 
     @PatchMapping("/state")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Empty>> updateUserWorkState(@RequestHeader("X-CODE") String memberCode) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Empty> updateUserWorkState(@RequestHeader("X-CODE") String memberCode) {
 
-        return null;
+        return ResponseDto.success();
     }
 
     @DeleteMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ResponseDto<Empty>> deleteUser() {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Empty> deleteUser() {
 
-        return null;
+        return ResponseDto.success();
     }
 
     @GetMapping("/check-name")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Empty> existMemberByName(@RequestParam(name = "name") String name) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Empty> existMemberByName(@RequestParam(name = "name") String name) {
 
-        return null;
+        return ResponseDto.success();
     }
 
 

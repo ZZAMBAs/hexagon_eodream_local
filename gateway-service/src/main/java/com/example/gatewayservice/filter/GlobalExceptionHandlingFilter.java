@@ -4,6 +4,7 @@ package com.example.gatewayservice.filter;
 import com.example.gatewayservice.common.exception.BusinessException;
 import com.example.gatewayservice.common.exception.ErrorCode;
 import com.example.gatewayservice.common.web.model.dto.ResponseDto;
+import com.example.gatewayservice.common.web.model.vo.Empty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -45,20 +46,23 @@ public class GlobalExceptionHandlingFilter
         response.setStatusCode(HttpStatus.valueOf(errorCode.getStatusCode()));
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        ResponseDto<Map<String, String>> body = new ResponseDto<>(
+        ResponseDto<Empty> body = new ResponseDto<>(
+            errorCode.getCode(),
             errorCode.getStatusCode(),
             errorCode.getMessage(),
-            Map.of("errorCode", errorCode.getCode())
+            Empty.getInstance()
         );
 
         byte[] bytes;
         try {
             bytes = om.writeValueAsBytes(body);
         } catch (JsonProcessingException e) {
-            bytes = ("{\"code\":" + errorCode.getStatusCode() +
-                ",\"message\":\"" + errorCode.getMessage() +
-                "\",\"data\":{\"errorCode\":\"" + errorCode.getCode() + "\"}}")
-                .getBytes(StandardCharsets.UTF_8);
+            bytes = (
+                "{\"code\":" + errorCode.getStatusCode() +
+                    ",\"httpStatusCode\":" + errorCode.getStatusCode() +
+                    ",\"message\":\"" + errorCode.getMessage() +
+                    "\",\"data\":{\"errorCode\":\"" + errorCode.getCode() + "\"}}"
+                    ).getBytes(StandardCharsets.UTF_8);
         }
 
         return response.writeWith(Mono.just(response.bufferFactory().wrap(bytes)));

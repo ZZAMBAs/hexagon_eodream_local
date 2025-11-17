@@ -1,7 +1,7 @@
 package com.example.memberservice.oauth.service;
 
 import com.example.memberservice.common.exception.BusinessException;
-import com.example.memberservice.common.exception.BusinessCode;
+import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.redis.service.RedisSingleDataService;
 import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.security.jwt.JwtTokenGenerator;
@@ -62,10 +62,10 @@ public class OAuthService {
         Optional<String> optionalExistRefreshToken = redisSingleDataService.getSingleData(memberCode);
 
         String existRefreshToken = optionalExistRefreshToken.orElseThrow(
-            () -> new BusinessException(BusinessCode.UNAUTHORIZATION));
+            () -> new BusinessException(ErrorCode.UNAUTHORIZATION));
 
         if (!existRefreshToken.equals(refreshToken)) {
-            throw new BusinessException(BusinessCode.UNAUTHORIZATION);
+            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
         }
         return memberCode;
     }

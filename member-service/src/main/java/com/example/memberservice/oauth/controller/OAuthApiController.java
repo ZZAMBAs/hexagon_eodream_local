@@ -1,9 +1,11 @@
 package com.example.memberservice.oauth.controller;
 
 import com.example.memberservice.common.exception.BusinessException;
-import com.example.memberservice.common.exception.BusinessCode;
+import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.security.jwt.JwtProperties;
 import com.example.memberservice.common.web.CookieGenerator;
+import com.example.memberservice.common.web.model.dto.ResponseDto;
+import com.example.memberservice.common.web.model.vo.Empty;
 import com.example.memberservice.oauth.controller.swagger.OAuthApiControllerSwagger;
 import com.example.memberservice.oauth.service.OAuthService;
 import com.example.memberservice.oauth.service.dto.output.TokensOutput;
@@ -29,31 +31,34 @@ public class OAuthApiController implements OAuthApiControllerSwagger {
     private final JwtProperties jwtProperties;
 
     @PostMapping("/reissue")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void reissueAccessTokenByRefreshToken(
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Empty> reissueAccessTokenByRefreshToken(
         HttpServletResponse httpServletResponse,
         @CookieValue(name = "refresh-token", required = false) String refreshToken) {
 
         if (refreshToken == null) {
-            throw new BusinessException(BusinessCode.UNAUTHORIZATION);
+            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
         }
 
         TokensOutput output = oAuthService.reissueAccessTokenByRefreshToken(refreshToken);
 
-        httpServletResponse.setHeader(HttpHeaders.AUTHORIZATION, "Bearer "+output.accessToken());
+        httpServletResponse.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + output.accessToken());
         httpServletResponse.setHeader(HttpHeaders.SET_COOKIE,
             CookieGenerator.createCookies("refresh-token", output.refreshToken(),
                 TimeUnit.MILLISECONDS.toSeconds(jwtProperties.getRefreshTokenTtl())));
 
+        return ResponseDto.success();
     }
 
 
     @DeleteMapping("/logout")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logoutMemberByRefreshToken(
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Empty> logoutMemberByRefreshToken(
         @CookieValue("refresh-token") String refreshToken) {
 
         oAuthService.deleteRefreshTokenToRedis(refreshToken);
+
+        return ResponseDto.success();
     }
 
 }

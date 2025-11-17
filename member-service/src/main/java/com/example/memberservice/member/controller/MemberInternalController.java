@@ -1,17 +1,19 @@
 package com.example.memberservice.member.controller;
 
-import com.example.memberservice.common.model.vo.ResponseDto;
+import com.example.memberservice.common.web.model.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.vo.MemberInfo;
 import com.example.memberservice.member.controller.swagger.MemberInternalControllerSwagger;
 import com.example.memberservice.member.service.MemberInternalService;
-import com.example.memberservice.member.service.MemberService;
+import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
+import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,18 +27,18 @@ public class MemberInternalController implements MemberInternalControllerSwagger
     private final MemberInternalService memberInternalService;
 
     @GetMapping()
-    public ResponseEntity<ResponseDto<MemberInfo>> getMemberInfoByCode(
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<MemberInfoOutput> getMemberInfoByCode(
         @RequestParam(name = "member-code", required = false) List<String> paramMemberCode) {
 
-        //TODO 응답은 이후에 구성
-        return null;
+        return ResponseDto.success(memberInternalService.getMemberInfos(paramMemberCode));
     }
 
     @GetMapping("/exist")
-    public ResponseEntity<ResponseDto<MemberInfo>> existMemberByCode(
-        @RequestParam(name = "member-code", required = false) String paramMemberCode) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<MemberExistOutput> existMemberByCode(
+        @RequestParam(name = "member-code", required = false) List<String> paramMemberCode) {
 
-        //TODO 응답은 이후에 구성
-        return null;
+        return ResponseDto.success(memberInternalService.getMemberExists(paramMemberCode));
     }
 }

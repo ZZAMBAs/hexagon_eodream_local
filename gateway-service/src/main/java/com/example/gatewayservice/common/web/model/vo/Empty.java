@@ -1,5 +1,8 @@
-package com.example.memberservice.common.model.vo;
+package com.example.gatewayservice.common.web.model.vo;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(using = EmptySerializer.class)
 public final class Empty {
     private static final Empty INSTANCE = new Empty();
 

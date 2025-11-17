@@ -1,5 +1,7 @@
 package com.example.memberservice.member.service;
 
+import com.example.memberservice.common.exception.BusinessException;
+import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.member.entity.Members;
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
@@ -27,19 +29,19 @@ public class MemberInternalService {
         List<Members> findMembers = memberJpaRepository.findAllByCodeInAndIsDeletedFalse(setMemberCodes);
 
         if (setMemberCodes.size() > findMembers.size()) {
-            //TODO BusinnessException 추가 이후
-            throw new IllegalArgumentException("요청하신 memberCode 중 잘못된 memberCode가 존재합니다.");
+
+            throw new BusinessException(ErrorCode.INTERNAL_ILLEGAL_MEMBER_CODE);
         }
 
         return new MemberInfoOutput(
-                findMembers.stream()
-                    .map(m -> new MemberInfo(
-                        m.getCode(),
-                        m.getName(),
-                        m.getCanWork()
-                    ))
-                    .toList()
-            );
+            findMembers.stream()
+                .map(m -> new MemberInfo(
+                    m.getCode(),
+                    m.getName(),
+                    m.getCanWork()
+                ))
+                .toList()
+        );
     }
 
     public MemberExistOutput getMemberExists(List<String> memberCodes) {

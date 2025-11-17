@@ -1,15 +1,14 @@
 package com.example.memberservice.common.exception;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 public class BusinessException extends RuntimeException {
 
-    private final BusinessCode businessCode;
+    private final ErrorCode errorCode;
 
-    public BusinessException(BusinessCode businessCode) {
-        super(businessCode.getMessage());
-        this.businessCode = businessCode;
+    public BusinessException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
     }
 }

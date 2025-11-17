@@ -1,7 +1,11 @@
 package com.example.memberservice.member.controller.swagger;
 
-import com.example.memberservice.common.model.vo.ResponseDto;
+import com.example.memberservice.common.exception.ErrorCode;
+import com.example.memberservice.common.swagger.annotation.ApiErrorResponses;
+import com.example.memberservice.common.web.model.dto.ResponseDto;
 import com.example.memberservice.member.controller.dto.vo.MemberInfo;
+import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
+import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,7 +13,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -20,13 +23,14 @@ public interface MemberInternalControllerSwagger {
     @Parameters({
         @Parameter(name = "member-code", description = "조회할 사용자 코드", in = ParameterIn.QUERY, required = false)
     })
-    ResponseEntity<ResponseDto<MemberInfo>> getMemberInfoByCode(
+    @ApiErrorResponses(exceptions = ErrorCode.INTERNAL_ILLEGAL_MEMBER_CODE)
+    ResponseDto<MemberInfoOutput> getMemberInfoByCode(
         @RequestParam(name = "member-code", required = false) List<String> paramMemberCode
     );
 
     @Operation(summary = "사용자 존재 여부 확인", description = "회원 코드 기반으로 사용자가 존재하는지 확인합니다.")
     @Parameter(name = "member-code", description = "존재하는 지 조회할 사용자 코드", in = ParameterIn.QUERY, required = false)
-    ResponseEntity<ResponseDto<MemberInfo>> existMemberByCode(
-        @RequestParam(name = "member-code", required = false) String paramMemberCode
+    ResponseDto<MemberExistOutput> existMemberByCode(
+        @RequestParam(name = "member-code", required = false) List<String> paramMemberCode
     );
 }

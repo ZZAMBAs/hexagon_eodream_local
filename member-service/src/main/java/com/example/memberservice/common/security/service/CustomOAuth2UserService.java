@@ -1,6 +1,6 @@
 package com.example.memberservice.common.security.service;
 
-import com.example.memberservice.common.model.vo.Provider;
+import com.example.memberservice.common.security.model.vo.Provider;
 import com.example.memberservice.common.security.model.dto.CustomOAuth2UserDto;
 import com.example.memberservice.common.security.model.dto.UserInfoDto;
 import com.example.memberservice.common.security.model.vo.GoogleUserInfo;

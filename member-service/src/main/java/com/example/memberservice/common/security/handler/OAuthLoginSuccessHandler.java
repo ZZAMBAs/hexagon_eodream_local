@@ -63,7 +63,7 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
 
         } catch (BusinessException e) {
             oAuthLoginFailureHandler.onAuthenticationFailure(request, response,
-                new AuthenticationServiceException(e.getBusinessCode().getMessage(), e));
+                new AuthenticationServiceException(e.getErrorCode().getMessage(), e));
 
             return;
         }

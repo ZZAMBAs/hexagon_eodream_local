@@ -1,7 +1,7 @@
 package com.example.memberservice.member.service;
 
 
-import com.example.memberservice.common.model.vo.Provider;
+import com.example.memberservice.common.security.model.vo.Provider;
 import com.example.memberservice.member.entity.Members;
 import com.example.memberservice.member.entity.vo.Gender;
 import com.example.memberservice.member.repository.MemberJpaRepository;

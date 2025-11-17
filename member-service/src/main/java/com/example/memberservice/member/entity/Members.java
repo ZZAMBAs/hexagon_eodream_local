@@ -3,14 +3,12 @@ package com.example.memberservice.member.entity;
 
 import com.example.memberservice.member.entity.vo.Gender;
 
-import com.example.memberservice.common.model.vo.Provider;
+import com.example.memberservice.common.security.model.vo.Provider;
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.hibernate.annotations.Comment;

@@ -1,6 +1,6 @@
 package com.example.memberservice.socialmember.entity;
 
-import com.example.memberservice.common.model.vo.Provider;
+import com.example.memberservice.common.security.model.vo.Provider;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

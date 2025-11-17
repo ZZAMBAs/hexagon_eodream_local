@@ -3,7 +3,7 @@ package com.example.memberservice.common.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import com.example.memberservice.common.exception.BusinessException;
-import com.example.memberservice.common.exception.BusinessCode;
+import com.example.memberservice.common.exception.ErrorCode;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class JwtTokenValidator {
                 .getPayload();
         } catch (JwtException e) {
             //TODO JwtToken 관련 비지니스 Exception으로 변경
-            throw new BusinessException(BusinessCode.UNAUTHORIZATION);
+            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
 
         }
     }

@@ -1,7 +1,7 @@
 package com.example.memberservice.common.security.jwt;
 
 import com.example.memberservice.common.exception.BusinessException;
-import com.example.memberservice.common.exception.BusinessCode;
+import com.example.memberservice.common.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ public class JwtTokenParser {
     public String parseMemberCode(Claims claims) {
         Object memberCode = claims.get(jwtProperties.getMemberCodeClaims());
         if (memberCode == null) {
-            throw new BusinessException(BusinessCode.UNAUTHORIZATION);
+            throw new BusinessException(ErrorCode.UNAUTHORIZATION);
         }
         return memberCode.toString();
     }
