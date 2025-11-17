@@ -18,4 +18,7 @@ public interface TagRepository extends JpaRepository<TagEntity, Long> {
 
     // 코드 목록으로 태그 조회
     List<TagEntity> findAllByCodeIn(Collection<String> codes);
+
+    // 기술명으로 태그 엔티티 조회 (대소문자 구분 없이)
+    Optional<TagEntity> findBySkillIgnoreCase(String skill);
 }

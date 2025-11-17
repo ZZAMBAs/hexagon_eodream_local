@@ -13,7 +13,7 @@ public record SelfPromotionUpdateRequest(
         @Schema(description = "프로모션 내용", example = "최신 기술 스택으로 업데이트 했습니다.")
         String content,
 
-        @Schema(description = "지급 방식 (MONTHLY: 월급, PER_CASE: 건당)", example = "PER_CASE")
+        @Schema(description = "지급 방식 (MONTHLY: 월급, PER_JOB: 건당)", example = "PER_JOB")
         PaymentType paymentType,
 
         @Schema(description = "단위 금액", example = "500000")

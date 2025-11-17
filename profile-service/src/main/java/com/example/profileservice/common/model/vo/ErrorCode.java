@@ -19,7 +19,8 @@ public enum ErrorCode {
     UNAUTHORIZED_EXPERIENCE_ACCESS(HttpStatus.FORBIDDEN, 3102, "해당 경력/경험 항목에 대한 접근 권한이 없습니다."),
 
     // 4xx 클라이언트 에러 - rating (3200 ~ 3299)
-
+    RATING_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, 3201, "평가 대상 회원을 찾을 수 없습니다."),
+    CANNOT_RATE_MYSELF(HttpStatus.BAD_REQUEST, 3202, "자기 자신을 평가할 수 없습니다."),
 
     // 4xx 클라이언트 에러 - resume (3300 ~ 3399)
     RESUME_NOT_FOUND(HttpStatus.NOT_FOUND, 3301, "요청하신 이력서를 찾을 수 없습니다."),

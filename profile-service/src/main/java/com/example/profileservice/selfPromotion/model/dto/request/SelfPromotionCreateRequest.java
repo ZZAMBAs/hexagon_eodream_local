@@ -17,7 +17,7 @@ public record SelfPromotionCreateRequest(
         @NotBlank(message = "내용은 필수입니다.")
         String content,
 
-        @Schema(description = "지급 방식 (MONTHLY: 월급, PER_CASE: 건당)", example = "MONTHLY")
+        @Schema(description = "지급 방식 (MONTHLY: 월급, PER_JOB: 건당)", example = "MONTHLY")
         @NotNull(message = "지급 방식은 필수입니다.")
         PaymentType paymentType,
 

@@ -147,6 +147,14 @@ public class TagService {
         }
     }
 
+    // 기술명으로 태그 엔티티 조회 (이름으로 조회하고, 없을 경우 예외를 발생)
+    public TagResponse getTagBySkill(String skill) {
+        TagEntity tag = tagRepository.findBySkillIgnoreCase(skill)
+                .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND)); // TAG_NOT_FOUND 예외 사용
+
+        return toResponse(tag);
+    }
+
     private TagResponse toResponse(TagEntity entity) {
         return new TagResponse(entity.getCode(), entity.getSkill());
     }

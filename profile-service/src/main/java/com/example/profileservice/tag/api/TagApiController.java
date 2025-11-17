@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Tag API", description = "기술 태그 및 회원-태그 연결 관리")
 public interface TagApiController {
@@ -88,4 +89,17 @@ public interface TagApiController {
             @Parameter(in = ParameterIn.HEADER, required = true, name = "X-CODE", description = "회원 고유 코드")
             @RequestHeader(value = "X-CODE") String memberCode,
             @RequestBody List<String> tagCodes);
+
+    // 기술명으로 태그 정보 조회
+    @Operation(summary = "기술명으로 태그 정보 조회", description = "기술 태그 이름(skill)을 통해 해당 태그의 코드와 정보를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "태그 정보 조회 성공")
+    @ApiResponse(responseCode = "404", description = "존재하지 않는 태그 이름",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ResponseDto.class),
+                    examples = @ExampleObject(value = "{\"code\": 3501, \"httpStatus\": 404,"
+                            + " \"message\": \"해당 기술 태그를 찾을 수 없습니다.\", \"data\": null}"))
+    )
+    ResponseEntity<ResponseDto<TagResponse>> getTagBySkill(
+            @Parameter(description = "조회할 기술 태그 이름", example = "Java")
+            @RequestParam("skill") String skill);
 }

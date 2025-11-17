@@ -5,5 +5,5 @@ package com.example.profileservice.common.model.vo;
  */
 public enum PaymentType {
     MONTHLY, // 월급
-    PER_CASE // 건당
+    PER_JOB // 건당
 }

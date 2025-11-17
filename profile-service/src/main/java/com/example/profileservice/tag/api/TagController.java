@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -88,5 +89,14 @@ public class TagController implements TagApiController {
         tagService.syncMemberTags(memberCode, tagCodes);
 
         return ResponseEntity.ok(ResponseDto.success(Empty.getInstance()));
+    }
+
+    // 기술명으로 태그 정보 조회
+    @Override
+    @GetMapping("/by-skill")
+    public ResponseEntity<ResponseDto<TagResponse>> getTagBySkill(@RequestParam("skill") String skill) {
+        TagResponse tag = tagService.getTagBySkill(skill);
+
+        return ResponseEntity.ok(ResponseDto.success(tag));
     }
 }
