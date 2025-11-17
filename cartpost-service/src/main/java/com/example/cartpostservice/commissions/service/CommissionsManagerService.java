@@ -10,34 +10,28 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CommissionsServiceImpl implements CommissionsService {
+public class CommissionsManagerService {
 
-    @Override
     public CommissionCreateResult createCommission(String code) {
         return null;
     }
 
-    @Override
     public CommissionReadResult readCommission(String commissionsCode) {
         return null;
     }
 
-    @Override
     public CommissionUpdateResult updateCommission(String code, String commissionsCode) {
         return null;
     }
 
-    @Override
     public CommissionDeleteResult deleteCommission(String code, String commissionsCode) {
         return null;
     }
 
-    @Override
     public CommissionFinishResult finishCommission(String code) {
         return null;
     }
 
-    @Override
     public CommissionSortReadResult readOwnCommissions(String code, Pageable pageable) {
         return null;
     }

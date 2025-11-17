@@ -1,11 +1,14 @@
 package com.example.cartpostservice.commissions.controller;
 
+import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionDeleteResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionFinishResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionUpdateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionsReadResponse;
+import com.example.cartpostservice.commissions.service.CommissionsService;
 import com.example.cartpostservice.common.dto.ResponseDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,18 +16,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/commissions")
+@RequiredArgsConstructor
 public class CommissionsController implements CommissionsApi {
+
+    private final CommissionsService commissionsService;
 
     @Override
     @PostMapping
-    public ResponseEntity<ResponseDto<CommissionCreateResponse>> createCommission(@RequestHeader("X-CODE") String code) {
+    public ResponseEntity<ResponseDto<CommissionCreateResponse>> createCommission(@RequestHeader("X-CODE") String code,
+            @RequestBody CommissionCreateRequest commissionCreateRequest) {
+
+        //commissionsService.createCommission(code, commissionCreateRequest);
+
         return null;
     }
 
@@ -53,7 +63,8 @@ public class CommissionsController implements CommissionsApi {
 
     @Override
     @PatchMapping("/deadline")
-    public ResponseEntity<ResponseDto<CommissionFinishResponse>> finishCommission(@RequestHeader("X-CODE") String code) {
+    public ResponseEntity<ResponseDto<CommissionFinishResponse>> finishCommission(
+            @RequestHeader("X-CODE") String code) {
         return null;
     }
 

@@ -1,5 +1,6 @@
 package com.example.cartpostservice.commissions.controller;
 
+import com.example.cartpostservice.commissions.controller.dto.request.CommissionCreateRequest;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionCreateResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionDeleteResponse;
 import com.example.cartpostservice.commissions.controller.dto.response.CommissionFinishResponse;
@@ -31,7 +32,7 @@ public interface CommissionsApi {
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    ResponseEntity<ResponseDto<CommissionCreateResponse>> createCommission(@RequestHeader("X-CODE") String code);
+    ResponseEntity<ResponseDto<CommissionCreateResponse>> createCommission(@RequestHeader("X-CODE") String code, CommissionCreateRequest commissionCreateRequest);
 
     @Operation(summary = "의뢰글 조회", description = "의뢰글 코드를 기준으로 의뢰글을 조회합니다.")
     @Parameter(name = "commissionsCode", description = "의뢰글 코드", required = true)

@@ -22,6 +22,15 @@ public record ResponseDto<T>(
         T data
 ) {
 
+    public static <T> ResponseDto<T> success(CustomStatusCode customStatusCode, T responseData) {
+        return new ResponseDto<>(
+                customStatusCode.getCode(),
+                customStatusCode.getStatus().value(),
+                customStatusCode.getMessage(),
+                responseData
+        );
+    }
+
     //data가 없는 에러 응답 (BusinessException)
     public static ResponseDto<EmptyResponse> createEmptyErrorResponse(CustomStatusCode customStatusCode) {
         return new ResponseDto<>(

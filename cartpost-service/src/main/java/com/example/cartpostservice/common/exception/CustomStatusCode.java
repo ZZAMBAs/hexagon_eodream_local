@@ -7,7 +7,12 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum CustomStatusCode {
-    SUCCESS(HttpStatus.OK, 0, "성공");
+    SUCCESS(HttpStatus.OK, 0, "성공"),
+    SUCCESS_NO_DATA(HttpStatus.NO_CONTENT, 6204, "데이터가 존재하지 않습니다"),
+
+    FORBIDDEN_ITEM(HttpStatus.FORBIDDEN, 6403, "소유하고 있는 아이템이 아닙니다" ),
+    NOT_FOUND_ITEM(HttpStatus.BAD_REQUEST, 6404, "아이템이 존재하지 않습니다"),
+    NOT_FOUND_MEMBER(HttpStatus.INTERNAL_SERVER_ERROR, 6500, "내부 서버 문제로 장바구니가 없습니다");
 
 
     private final HttpStatus status;

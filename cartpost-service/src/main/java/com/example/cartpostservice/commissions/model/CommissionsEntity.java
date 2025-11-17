@@ -1,6 +1,6 @@
 package com.example.cartpostservice.commissions.model;
 
-import com.example.cartpostservice.commissions.model.vo.PaymentType;
+import com.example.cartpostservice.common.model.vo.PaymentType;
 import com.example.cartpostservice.common.model.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -28,5 +28,7 @@ public class CommissionsEntity extends BaseEntity {
     private LocalDate endedAt;
 
     private boolean isOpen;
+
+    private String writerName;
 
 }

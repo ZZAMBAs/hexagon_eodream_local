@@ -1,0 +1,41 @@
+### 공통 변수 정의
+@baseUrl = http://localhost:8000
+@memberCode = member-uuid-002
+@invalidMemberCode = INVALID_MEMBER
+@validItemCode = item-uuid-002
+@notFoundItemCode = NOT_FOUND_ITEM
+
+###
+
+### 1. Cart Items 조회 - 성공/데이터 있음
+GET {{baseUrl}}/api/carts/items
+X-CODE: {{memberCode}}
+Accept: application/json
+
+###
+
+### 2. Cart Items 조회 - 유효하지 않은 회원 코드
+GET {{baseUrl}}/api/carts/items
+X-CODE: {{invalidMemberCode}}
+Accept: application/json
+
+###
+
+### 3. 장바구니 아이템 삭제 - 성공 예시
+DELETE {{baseUrl}}/api/carts/items/{{validItemCode}}
+X-CODE: {{memberCode}}
+Accept: application/json
+
+###
+
+### 4. 장바구니 아이템 삭제 - 존재하지 않는 아이템
+DELETE {{baseUrl}}/api/carts/items/{{notFoundItemCode}}
+X-CODE: {{memberCode}}
+Accept: application/json
+
+###
+
+### 5. 장바구니 아이템 삭제 - 유효하지 않은 회원 코드
+DELETE {{baseUrl}}/api/carts/items/{{validItemCode}}
+X-CODE: {{invalidMemberCode}}
+Accept: application/json

@@ -1,8 +1,6 @@
 package com.example.cartpostservice.commissions.service;
 
-import com.example.cartpostservice.commissions.model.CommissionsEntity;
 import com.example.cartpostservice.commissions.repository.CommissionsRepository;
-import com.example.cartpostservice.commissions.service.dto.response.CommissionCreateResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,9 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
-
 @ExtendWith(MockitoExtension.class) //Mockito + JUnit 연동
 class CommissionsServiceTest {
 
@@ -22,7 +17,7 @@ class CommissionsServiceTest {
     private CommissionsRepository commissionsRepository;
 
     @InjectMocks
-    private CommissionsServiceImpl commissionsService;
+    private CommissionsManagerService commissionsService;
 
     private String xCode;
     private String commissionCode;

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -33,7 +34,7 @@ public interface CartApi {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 (X-CODE 헤더 누락)"),
     })
-    ResponseEntity<ResponseDto<CartItemsGetResponse>> getCartItems(@RequestHeader(name = "X-CODE") String xCode);
+    ResponseEntity<ResponseDto<List<CartItemsGetResponse>>> getCartItems(@RequestHeader(name = "X-CODE") String xCode);
 
 
     @Operation(summary = "장바구니 아이템 삭제", description = "X-CODE 헤더를 기준으로 경로 변수로 받은 아이템을 삭제합니다.")

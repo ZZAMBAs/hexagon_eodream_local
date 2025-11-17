@@ -1,25 +1,39 @@
 package com.example.cartpostservice.cart.model;
 
+import com.example.cartpostservice.cart.model.vo.ContractStatus;
+import com.example.cartpostservice.common.model.vo.PaymentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Table(name = "cart_items")
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.Instant;
+
 @Entity
+@Table(name = "cart_items")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class CartItemsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
+
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
 
     @Column(name = "contract_code", nullable = false, updatable = false)
     private String contractCode;
@@ -27,6 +41,28 @@ public class CartItemsEntity {
     @Column(name = "cart_code", nullable = false, updatable = false)
     private String cartCode;
 
-    @Column(name = "status", nullable = false, updatable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private ContractStatus status;
+
+    @Column(name = "started_at", nullable = false)
+    private Instant startedAt;
+
+    @Column(name = "ended_at", nullable = false)
+    private Instant endedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_type", nullable = false)
+    private PaymentType paymentType;
+
+    @Column(name = "amount", nullable = false)
+    private String amount;
+
+    @PrePersist
+    public void prePersist() {
+        if (code == null) {
+            code = UUID.randomUUID().toString();
+        }
+    }
 }
+
