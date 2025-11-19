@@ -1,11 +1,16 @@
-package com.example.cartpostservice.commissions.controller.dto.response;
+package com.example.cartpostservice.commissions.service.dto.response;
 
 import com.example.cartpostservice.common.model.vo.PaymentType;
 import java.time.LocalDate;
-import java.util.List;
 
-public record CommissionReadResponse(
+public record CommissionsServiceResult(
+        String code,
+
+        String memberCode,
+
         String title,
+
+        String content,
 
         PaymentType paymentType,
 
@@ -17,9 +22,7 @@ public record CommissionReadResponse(
 
         boolean isOpen,
 
-        String writerName,
-
-        List<String> tagCode
+        String writerName
 ) {
 
 }
