@@ -2,8 +2,6 @@
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
-gradle-wrapper.properties
-
 # IDE
 .idea/
 *.iml
@@ -15,3 +13,6 @@ gradle-wrapper.properties
 *.properties
 *.yml
 *.yaml
+
+!gradle-wrapper.properties
+!*-workflow.yml
