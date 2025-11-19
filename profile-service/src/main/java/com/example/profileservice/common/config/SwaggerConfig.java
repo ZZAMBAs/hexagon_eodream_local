@@ -2,15 +2,11 @@ package com.example.profileservice.common.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.servers.Server;
-import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
-
-    private final String API_GATEWAY_URL = "/api/profiles";
 
     @Bean
     public OpenAPI openAPI() {
@@ -23,8 +19,6 @@ public class SwaggerConfig {
 
         // OpenAPI 객체 구성
         return new OpenAPI()
-                .info(info)
-                // API Gateway 경로 Prefix 설정
-                .servers(List.of(new Server().url(API_GATEWAY_URL)));
+                .info(info);
     }
 }
