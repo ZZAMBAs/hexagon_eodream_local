@@ -1,5 +1,6 @@
 package com.example.searchservice.selfpromotion.entity;
 
+import com.example.searchservice.common.vo.PaymentType;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,8 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.InnerField;
+import org.springframework.data.elasticsearch.annotations.MultiField;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
 @Getter
@@ -26,7 +29,12 @@ public class SelfPromotionDocumentEntity {
     @Id
     private String code;
 
-    @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer")
+    @MultiField(
+            mainField = @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer"),
+            otherFields = {
+                @InnerField(suffix = "completion", type = FieldType.Search_As_You_Type)
+            }
+    )
     private String title;
 
     @Field(type = FieldType.Text, analyzer = "self_promotion_index_analyzer", searchAnalyzer = "self_promotion_search_analyzer")
@@ -37,6 +45,12 @@ public class SelfPromotionDocumentEntity {
 
     @Field(type = FieldType.Keyword, name = "member_nickname")
     private String memberNickname;
+
+    @Field(type = FieldType.Keyword, name = "payment_type")
+    private PaymentType paymentType;
+
+    @Field(type = FieldType.Long, name = "pay_amount")
+    private Long payAmount;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time, name = "updated_at")
     private Instant updatedAt;

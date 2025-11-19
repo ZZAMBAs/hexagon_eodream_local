@@ -4,6 +4,7 @@ import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntit
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPromotionDocumentEntity, String> {
@@ -11,9 +12,9 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
     @Query("""
             {
               "multi_match": {
-                "query": "#{#q}",
+                "query": "#{#query}",
                 "fields": ["title", "content"],
-                "operator": "or",
+                "minimum_should_match": "2<75%",
                 "fuzziness": "1"
               }
             }
@@ -24,7 +25,8 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
             {
               "match": {
                 "title": {
-                  "query": "#{#q}",
+                  "query": "#{#query}",
+                  "minimum_should_match": "2<75%",
                   "fuzziness": "1"
                 }
               }
@@ -36,11 +38,27 @@ public interface SelfPromotionRepository extends ElasticsearchRepository<SelfPro
             {
               "match": {
                 "content": {
-                  "query": "#{#q}",
+                  "query": "#{#query}",
+                  "minimum_should_match": "2<75%",
                   "fuzziness": "1"
                 }
               }
             }
             """)
     Page<SelfPromotionDocumentEntity> searchContent(String query, Pageable pageable);
+
+    @Query("""
+            {
+              "multi_match": {
+                  "query": "#{#query}",
+                  "type": "bool_prefix",
+                  "fields": [
+                    "title.completion",
+                    "title.completion._2gram",
+                    "title.completion._3gram"
+                  ]
+                }
+            }
+            """)
+    SearchHits<SelfPromotionDocumentEntity> autoComplete(String query);
 }

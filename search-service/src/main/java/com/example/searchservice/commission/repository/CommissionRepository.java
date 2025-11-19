@@ -1,11 +1,10 @@
 package com.example.searchservice.commission.repository;
 
-import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.commission.entity.CommissionDocumentEntity;
-import com.example.searchservice.selfpromotion.entity.SelfPromotionDocumentEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public interface CommissionRepository extends ElasticsearchRepository<CommissionDocumentEntity, String> {
@@ -13,9 +12,9 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
     @Query("""
             {
               "multi_match": {
-                "query": "#{#q}",
+                "query": "#{#query}",
                 "fields": ["title", "content"],
-                "operator": "or",
+                "minimum_should_match": "2<75%",
                 "fuzziness": "1"
               }
             }
@@ -26,7 +25,8 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
             {
               "match": {
                 "title": {
-                  "query": "#{#q}",
+                  "query": "#{#query}",
+                  "minimum_should_match": "2<75%",
                   "fuzziness": "1"
                 }
               }
@@ -38,11 +38,27 @@ public interface CommissionRepository extends ElasticsearchRepository<Commission
             {
               "match": {
                 "content": {
-                  "query": "#{#q}",
+                  "query": "#{#query}",
+                  "minimum_should_match": "2<75%",
                   "fuzziness": "1"
                 }
               }
             }
             """)
     Page<CommissionDocumentEntity> searchContent(String query, Pageable pageable);
+
+    @Query("""
+            {
+              "multi_match": {
+                  "query": "#{#query}",
+                  "type": "bool_prefix",
+                  "fields": [
+                    "title.completion",
+                    "title.completion._2gram",
+                    "title.completion._3gram"
+                  ]
+                }
+            }
+            """)
+    SearchHits<CommissionDocumentEntity> autoComplete(String query);
 }

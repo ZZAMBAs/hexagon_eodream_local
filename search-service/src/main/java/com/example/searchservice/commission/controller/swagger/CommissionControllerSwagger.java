@@ -1,23 +1,19 @@
 package com.example.searchservice.commission.controller.swagger;
 
-import com.example.searchservice.commission.common.PaymentType;
+import com.example.searchservice.common.vo.PaymentType;
 import com.example.searchservice.commission.dto.CommissionResponseDto;
 import com.example.searchservice.common.response.BaseResponse;
 import com.example.searchservice.common.vo.SearchScope;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Commission Search API", description = "의뢰글 검색 / 검색 키워드 추천 API")
-public interface CommissionSearchControllerSwagger {
+public interface CommissionControllerSwagger {
 
     @Operation(summary = "의뢰글 검색", description = "조건(검색어, 태그, 급여, 기간 등)을 기반으로 의뢰글을 검색합니다.")
     @Parameters({
@@ -48,7 +44,7 @@ public interface CommissionSearchControllerSwagger {
             @Parameter(name = "query", description = "검색어 접두어", required = true),
             @Parameter(name = "size", description = "보여줄 추천 검색 키워드 개수", required = false)
     })
-    BaseResponse<CommissionResponseDto> suggest(
+    BaseResponse<List<String>> suggest(
             String query,
             int size
     );
