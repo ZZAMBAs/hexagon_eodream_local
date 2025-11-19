@@ -22,21 +22,17 @@ public class BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // BaseEntity
+    private Long id;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt; // BaseEntity
+    private Instant createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt; // BaseEntity
+    private Instant updatedAt;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false; // BaseEntity
-
-    protected void touchUpdatedAt() {
-        this.updatedAt = Instant.now();
-    }
+    private Boolean isDeleted = false;
 
 }

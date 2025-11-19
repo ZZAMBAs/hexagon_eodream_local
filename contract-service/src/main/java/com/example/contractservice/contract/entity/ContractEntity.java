@@ -56,7 +56,7 @@ public class ContractEntity extends BaseEntity {
     private String body;
 
     @Builder
-    public ContractEntity(String requestorCode, String contractorCode, String freelancerCode, String code,
+    private ContractEntity(String requestorCode, String contractorCode, String freelancerCode, String code,
             Instant startedAt, Instant endedAt,
             PaymentType paymentType, Long unitAmount, ContractStatus status, String name, String body) {
         this.requestorCode = requestorCode;
@@ -81,7 +81,9 @@ public class ContractEntity extends BaseEntity {
         this.status = status;
         this.name = name;
         this.body = body;
+    }
 
-        touchUpdatedAt();
+    public void updateStatus(ContractStatus status) {
+        this.status = status;
     }
 }
