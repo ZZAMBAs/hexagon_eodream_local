@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface RatingRepository extends JpaRepository<RatingEntity, Long> {
@@ -17,13 +16,11 @@ public interface RatingRepository extends JpaRepository<RatingEntity, Long> {
 
     // 만족 카운트를 1 증가시키는 쿼리
     @Modifying
-    @Transactional
     @Query("UPDATE RatingEntity r SET r.satisfiedCount = r.satisfiedCount + 1 WHERE r.receiverCode = :receiverCode")
     int incrementSatisfiedCount(@Param("receiverCode") String receiverCode);
 
     // 불만족 카운트를 1 증가시키는 쿼리
     @Modifying
-    @Transactional
     @Query("UPDATE RatingEntity r SET r.unsatisfiedCount = r.unsatisfiedCount + 1 WHERE r.receiverCode = :receiverCode")
     int incrementUnsatisfiedCount(@Param("receiverCode") String receiverCode);
 

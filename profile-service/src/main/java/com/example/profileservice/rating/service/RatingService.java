@@ -8,6 +8,7 @@ import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.model.dto.response.RatingResponse;
 import com.example.profileservice.rating.model.entity.RatingEntity;
 import com.example.profileservice.rating.repository.RatingRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RatingService {
 
     private final RatingRepository ratingRepository;
+    private final EntityManager entityManager;
 
     // 특정 회원의 평가 카운트를 조회
     public RatingResponse getMemberRating(String receiverCode) {
@@ -38,8 +40,10 @@ public class RatingService {
         // 2. 평가 대상 엔티티 확인 (없으면 생성)
         if (!ratingRepository.existsByReceiverCode(receiverCode)) {
             RatingEntity newRating = RatingEntity.builder().receiverCode(receiverCode).build();
-            ratingRepository.save(newRating);
+            ratingRepository.saveAndFlush(newRating);
         }
+
+        entityManager.flush();
 
         // 3. 원자적 업데이트 쿼리 실행
         if (request.satisfied()) {
@@ -47,6 +51,8 @@ public class RatingService {
         } else {
             ratingRepository.incrementUnsatisfiedCount(receiverCode);
         }
+
+        entityManager.clear();
 
         // 4. 업데이트된 최신 데이터 조회 후 반환
         RatingEntity updatedRating = ratingRepository.findByReceiverCode(receiverCode)

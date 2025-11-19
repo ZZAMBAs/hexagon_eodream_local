@@ -35,7 +35,9 @@ public class RatingEntity {
     private int unsatisfiedCount = 0;
 
     @Builder
-    public RatingEntity(String receiverCode) {
+    public RatingEntity(String receiverCode, int satisfiedCount, int unsatisfiedCount) {
         this.receiverCode = receiverCode;
+        this.satisfiedCount = satisfiedCount;
+        this.unsatisfiedCount = unsatisfiedCount;
     }
 }

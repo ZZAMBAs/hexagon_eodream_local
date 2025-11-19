@@ -2,6 +2,7 @@ package com.example.profileservice.experience.model.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 
@@ -21,7 +22,7 @@ public record ExperienceRequest(
         String description,
 
         @Schema(description = "시작일", example = "2023-01-01T00:00:00Z")
-        @NotBlank(message = "시작일은 필수입니다.")
+        @NotNull(message = "시작일은 필수입니다.")
         Instant startedAt,
 
         @Schema(description = "종료일 (진행 중이면 Null)", example = "2023-12-31T23:59:59Z")
