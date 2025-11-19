@@ -3,6 +3,7 @@ package com.example.communicationservice.service;
 import com.example.communicationservice.common.exception.ChatRoomException;
 import com.example.communicationservice.common.status.ResponseDtoStatus;
 import com.example.communicationservice.controller.dto.response.ChatMessageListReadResponse;
+import com.example.communicationservice.controller.dto.response.ChatMessageSendResponse;
 import com.example.communicationservice.entity.ChatMessage;
 import com.example.communicationservice.entity.ChatRoom;
 import com.example.communicationservice.repository.ChatMessageRepository;
@@ -37,6 +38,7 @@ class ChatMessageServiceTest {
     private static final String MY_CODE = "USER_A";
     private static final String PARTNER_CODE = "USER_B";
     private static final String ROOM_NAME = "채팅방";
+    private static final String CHAT_CONTENT = "테스트 메시지입니다.";
 
     @InjectMocks
     private ChatMessageService chatMessageService;
@@ -115,9 +117,76 @@ class ChatMessageServiceTest {
         ChatRoomException exception = assertThrows(ChatRoomException.class,
             () -> chatMessageService.findMessagesByRoomId(ROOM_ID, MY_CODE, pageable));
 
-        assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_UNAUTHORIZED);
+        assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_FORBIDDEN);
 
         verify(chatMessageRepository, times(0)).findAllByRoomId(any(String.class), any(Pageable.class));
+    }
+
+    @Test
+    void 채팅방_메시지를_저장하고_채팅방_업데이트_시간을_갱신한다() {
+        // given
+        String messageId = "saved-msg-id-1";
+        ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
+        ChatMessage savedMessage = ChatMessage.builder()
+            .roomId(ROOM_ID)
+            .senderCode(MY_CODE)
+            .content(CHAT_CONTENT)
+            .build();
+
+        ReflectionTestUtils.setField(savedMessage, "id", messageId);
+        ReflectionTestUtils.setField(savedMessage, "sentAt", Instant.now());
+
+        given(chatRoomRepository.findById(eq(ROOM_ID)))
+            .willReturn(Optional.of(chatRoom));
+        given(chatMessageRepository.save(any(ChatMessage.class)))
+            .willReturn(savedMessage);
+
+        // when
+        ChatMessageSendResponse response = chatMessageService.saveMessage(ROOM_ID, MY_CODE, CHAT_CONTENT);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.messageId()).isEqualTo(messageId);
+        assertThat(response.content()).isEqualTo(CHAT_CONTENT);
+
+        verify(chatRoomRepository, times(1)).findById(eq(ROOM_ID));
+        verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
+        verify(chatRoomRepository, times(1)).save(eq(chatRoom));
+    }
+
+    @Test
+    void 존재하지_않는_채팅방에_메시지_저장을_시도하면_예외가_발생한다() {
+        // given
+        given(chatRoomRepository.findById(any(String.class)))
+            .willReturn(Optional.empty());
+
+        // when & then
+        ChatRoomException exception = assertThrows(ChatRoomException.class,
+            () -> chatMessageService.saveMessage(ROOM_ID, MY_CODE, CHAT_CONTENT));
+
+        assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_NOT_FOUND);
+
+        verify(chatMessageRepository, times(0)).save(any());
+        verify(chatRoomRepository, times(1)).findById(eq(ROOM_ID));
+    }
+
+    @Test
+    void 메시지_송신자가_채팅방_참여자가_아니면_메시지_저장에_실패한다() {
+        // given
+        String unauthorizedUser = "UNAUTHORIZED_USER";
+        ChatRoom chatRoom = createMockChatRoom(List.of(MY_CODE, PARTNER_CODE));
+
+        given(chatRoomRepository.findById(eq(ROOM_ID)))
+            .willReturn(Optional.of(chatRoom));
+
+        // when & then
+        ChatRoomException exception = assertThrows(ChatRoomException.class,
+            () -> chatMessageService.saveMessage(ROOM_ID, unauthorizedUser, CHAT_CONTENT));
+
+        assertThat(exception.getStatus()).isEqualTo(ResponseDtoStatus.CHATROOM_FORBIDDEN);
+
+        verify(chatMessageRepository, times(0)).save(any());
+        verify(chatRoomRepository, times(0)).save(any(ChatRoom.class));
     }
 
     private ChatRoom createMockChatRoom(List<String> memberCodes) {
