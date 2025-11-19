@@ -5,6 +5,8 @@ import static com.example.contractservice.deposit.service.mapper.DepositHistoryM
 import static com.example.contractservice.deposit.service.mapper.DepositMapper.toDomain;
 
 import com.example.contractservice.deposit.controller.dto.request.DepositRechargeRequest;
+import com.example.contractservice.deposit.controller.dto.response.DepositHistoryCursorResponse;
+import com.example.contractservice.deposit.controller.dto.response.DepositInfoResponse;
 import com.example.contractservice.deposit.controller.dto.response.DepositRechargeResponse;
 import com.example.contractservice.deposit.domain.Deposit;
 import com.example.contractservice.deposit.domain.DepositHistory;
@@ -12,11 +14,13 @@ import com.example.contractservice.deposit.domain.exception.DepositException;
 import com.example.contractservice.deposit.entity.DepositEntity;
 import com.example.contractservice.deposit.entity.DepositHistoryEntity;
 import com.example.contractservice.deposit.repository.DepositRepository;
+import com.example.contractservice.deposit.service.dto.request.DepositHistoryCursorRequest;
 import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
 import com.example.contractservice.deposit.service.dto.response.DepositCreatedResponse;
 import com.example.contractservice.deposit.service.dto.response.DepositProcessResponse;
 import com.example.contractservice.deposit.service.mapper.DepositHistoryMapper;
 import com.example.contractservice.deposit.service.mapper.DepositMapper;
+import java.util.List;
 import java.util.function.BiConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +31,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class DepositService {
+    private static final int PAGE_SIZE = 20;
+
     private final DepositRepository depositRepository;
+
+    public DepositInfoResponse getMyDeposit(String memberCode) {
+        DepositEntity depositEntity = depositRepository.findDepositByMemberCode(memberCode);
+        return DepositInfoResponse.of(depositEntity);
+    }
+
+    public DepositHistoryCursorResponse getDepositHistories(DepositHistoryCursorRequest request) {
+        DepositEntity depositEntity = depositRepository.findDepositByMemberCode(request.memberCode());
+
+        List<DepositHistoryEntity> contractEntities = depositRepository.findAllBy(depositEntity.getCode(), request.cursorDate(),
+                request.cursorCode(), PAGE_SIZE);
+
+        return DepositHistoryCursorResponse.of(contractEntities, PAGE_SIZE);
+    }
 
     /** 회원가입한 사용자에 대한 예치금 엔티티를 생성합니다.
      *

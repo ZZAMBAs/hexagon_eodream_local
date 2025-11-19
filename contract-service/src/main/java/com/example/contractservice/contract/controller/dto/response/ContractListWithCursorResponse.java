@@ -25,8 +25,8 @@ public record ContractListWithCursorResponse(
         if (briefResponses.size() <= pageSize) { // 마지막 지점
             return new ContractListWithCursorResponse(
                     briefResponses,
-                    briefResponses.get(briefResponses.size() - 1).createdAt(),
-                    briefResponses.get(briefResponses.size() - 1).contractCode(),
+                    null,
+                    null,
                     false
             );
         }

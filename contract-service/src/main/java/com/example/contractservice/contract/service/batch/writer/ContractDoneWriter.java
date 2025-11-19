@@ -22,6 +22,6 @@ public class ContractDoneWriter extends ContractStatusWriter {
 
     @Override
     protected void publishEvent(ContractEntity contractEntity) {
-        applicationEventPublisher.publishEvent(new ContractEvent(contractEntity.getCode(), contractEntity.getCreatedAt(), ContractStatus.DONE.name()));
+        applicationEventPublisher.publishEvent(new ContractEvent(contractEntity.getRequestorCode(), contractEntity.getCode(), contractEntity.getCreatedAt(), ContractStatus.DONE.name()));
     }
 }

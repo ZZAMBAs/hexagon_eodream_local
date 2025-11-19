@@ -22,6 +22,6 @@ public class ContractCancelledWriter extends ContractStatusWriter {
 
     @Override
     protected void publishEvent(ContractEntity contractEntity) {
-        applicationEventPublisher.publishEvent(new ContractEvent(contractEntity.getCode(), contractEntity.getCreatedAt(), ContractStatus.CANCELLED.name()));
+        applicationEventPublisher.publishEvent(new ContractEvent(contractEntity.getRequestorCode(), contractEntity.getCode(), contractEntity.getCreatedAt(), ContractStatus.CANCELLED.name()));
     }
 }
