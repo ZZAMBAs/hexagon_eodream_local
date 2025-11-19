@@ -1,9 +1,10 @@
-package com.example.contractservice.contract.service.dto.event;
+package org.hexagon.core.events.contract;
 
 import java.time.Instant;
 
 public record ContractEvent(
-        String code,
+        String memberCode,
+        String contractCode,
         Instant createdAt,
         String status
 ) {
