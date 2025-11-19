@@ -11,7 +11,7 @@ import org.springframework.kafka.core.ProducerFactory;
 @Configuration
 public class KafkaTemplateConfig {
 
-    @Value("${kafka.topic.contract.name}")
+    @Value("${kafka.producer.topic.contract.name}")
     private String contractTopicName;
 
     @Value("${kafka.config.topic-partitions}")

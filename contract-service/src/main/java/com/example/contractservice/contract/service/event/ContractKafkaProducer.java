@@ -1,6 +1,6 @@
-package com.example.contractservice.contract.event;
+package com.example.contractservice.contract.service.event;
 
-import com.example.contractservice.contract.event.dto.ContractEvent;
+import com.example.contractservice.contract.service.event.dto.ContractEvent;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class ContractKafkaProducer implements ContractEventProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${kafka.topic.contract.name}")
+    @Value("${kafka.producer.topic.contract.name}")
     private String contractTopicName;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

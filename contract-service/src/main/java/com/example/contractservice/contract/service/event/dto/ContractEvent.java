@@ -1,4 +1,4 @@
-package com.example.contractservice.contract.event.dto;
+package com.example.contractservice.contract.service.event.dto;
 
 import java.time.Instant;
 

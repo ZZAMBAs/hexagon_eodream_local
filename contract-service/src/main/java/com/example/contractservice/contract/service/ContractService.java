@@ -12,7 +12,7 @@ import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.domain.vo.ContractInfo;
 import com.example.contractservice.contract.entity.ContractEntity;
-import com.example.contractservice.contract.event.dto.ContractEvent;
+import com.example.contractservice.contract.service.event.dto.ContractEvent;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractConfirmRequest;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
