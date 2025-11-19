@@ -3,7 +3,6 @@ package com.example.memberservice.member.controller.swagger;
 import com.example.memberservice.common.exception.ErrorCode;
 import com.example.memberservice.common.swagger.annotation.ApiErrorResponses;
 import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.member.controller.dto.vo.MemberInfo;
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -12,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
 
 

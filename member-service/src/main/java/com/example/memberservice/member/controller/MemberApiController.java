@@ -1,15 +1,16 @@
 package com.example.memberservice.member.controller;
 
-import com.example.memberservice.common.web.model.vo.Empty;
+
 import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.member.controller.dto.request.UserCreateRequest;
-import com.example.memberservice.member.controller.dto.request.UserUpdateRequest;
-import com.example.memberservice.member.controller.dto.response.UserGetResponse;
+import com.example.memberservice.common.web.model.vo.Empty;
+import com.example.memberservice.member.controller.dto.request.MemberCreateRequest;
+import com.example.memberservice.member.controller.dto.request.MemberUpdateRequest;
+import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
 import com.example.memberservice.member.controller.swagger.MemberApiControllerSwagger;
+import com.example.memberservice.member.mapper.MemberServiceInputMapper;
 import com.example.memberservice.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -37,46 +38,57 @@ public class MemberApiController implements MemberApiControllerSwagger {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<UserGetResponse> getMemberById(
-        @RequestParam(name = "member-code", required = false) String memberCode) {
-
-        return null;
+    public ResponseDto<MemberGetResponse> getMemberByCode(
+        @RequestHeader(name = "X-CODE", required = false) String xCode,
+        @RequestParam(name = "member-code", required = false) String paramCode) {
+        return ResponseDto.success(memberService.getMemberByCode(MemberServiceInputMapper.toGetMemberInput(xCode, paramCode)));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<Empty> createUser(@RequestBody UserCreateRequest request) {
 
-        return ResponseDto.success(HttpStatus.CREATED.value());
+    public ResponseDto<Empty> createMember(@RequestHeader(name = "X-CODE") String memberCode,
+        @RequestBody MemberCreateRequest request) {
+
+        memberService.createMember(MemberServiceInputMapper.toCreateMemberInput(memberCode, request));
+
+        return ResponseDto.success(HttpStatus.CREATED);
     }
 
     @PatchMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<Empty> updateUser(@RequestBody UserUpdateRequest request) {
+    public ResponseDto<Empty> updateMember(@RequestHeader(name = "X-CODE") String memberCode,
+        @RequestBody MemberUpdateRequest request) {
 
+        memberService.updateMember(MemberServiceInputMapper.toUpdateMemberInput(memberCode, request));
         return ResponseDto.success();
     }
 
     @PatchMapping("/state")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<Empty> updateUserWorkState(@RequestHeader("X-CODE") String memberCode) {
+    public ResponseDto<Empty> updateMemberWorkState(@RequestHeader("X-CODE") String memberCode) {
 
+        memberService.updateMemberWorkState(MemberServiceInputMapper.toUpdateMemberWorkStateInput(memberCode));
         return ResponseDto.success();
     }
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<Empty> deleteUser() {
+    public ResponseDto<Empty> deleteMember(@RequestHeader("X-CODE") String memberCode
+    ) {
+
+        memberService.deleteMember(MemberServiceInputMapper.toDeleteMemberInput(memberCode));
 
         return ResponseDto.success();
     }
 
     @GetMapping("/check-name")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<Empty> existMemberByName(@RequestParam(name = "name") String name) {
+    public ResponseDto<Empty> existMemberByName(@RequestHeader("X-CODE") String memberCode,
+        @RequestParam(name = "name") String name) {
+
+        memberService.existMemberByNickName(MemberServiceInputMapper.toExistMemberByNameInput(memberCode, name));
 
         return ResponseDto.success();
     }
-
-
 }

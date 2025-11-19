@@ -1,8 +1,224 @@
 package com.example.memberservice.member.service;
 
+import com.example.memberservice.common.exception.BusinessException;
+import com.example.memberservice.common.exception.ErrorCode;
+import com.example.memberservice.common.kafka.model.dto.MemberCreateEvent;
+import com.example.memberservice.common.kafka.model.dto.MemberUpdateEvent;
+import com.example.memberservice.common.kafka.producer.MemberCreateKafkaEventProducer;
+import com.example.memberservice.common.kafka.producer.MemberUpdateKafkaEventProducer;
+import com.example.memberservice.common.web.model.dto.ResponseDto;
+import com.example.memberservice.member.controller.dto.response.MemberGetResponse;
+import com.example.memberservice.member.entity.Members;
+import com.example.memberservice.member.repository.MemberJpaRepository;
+import com.example.memberservice.member.service.mapper.MembersMapper;
+import com.example.memberservice.member.service.model.dto.input.MemberCreateInput;
+import com.example.memberservice.member.service.model.dto.input.MemberDeleteInput;
+import com.example.memberservice.member.service.model.dto.input.MemberExistByNameInput;
+import com.example.memberservice.member.service.model.dto.input.MemberGetInput;
+import com.example.memberservice.member.service.model.dto.input.MemberUpdateInput;
+import com.example.memberservice.member.service.model.dto.input.MemberUpdateWorkStateInput;
+import com.example.memberservice.member.service.model.vo.ApiMemberInfo;
+import com.example.memberservice.member.service.model.vo.MemberRating;
+import com.example.memberservice.member.service.model.vo.MemberTag;
+import com.example.memberservice.member.service.util.RequestURIGenerator;
+import com.example.memberservice.socialmember.entity.SocialMembers;
+import com.example.memberservice.socialmember.repository.SocialMemberJpaRepository;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
+
+    private final MemberJpaRepository memberJpaRepository;
+
+    private final SocialMemberJpaRepository socialMemberJpaRepository;
+
+    // 멤버 조회에서 태그 정보와 평가 정보를 받아올 RestTemplate
+    private final RestTemplate restTemplate;
+
+    //멤버 생성 시 Deposit, Cart 가 수령할 이벤트 발생 주체
+    private final MemberCreateKafkaEventProducer memberCreateKafkaEventProducer;
+
+    //멤버 업데이트 시 받을 이벤트 발생 주체
+    private final MemberUpdateKafkaEventProducer memberUpdateKafkaEventProducer;
+
+    private final RequestURIGenerator requestURIGenerator;
+
+
+    //외부 API를 2개나 타기에 Transactional을 해주지 않습니다.
+    @Override
+    public MemberGetResponse getMemberByCode(MemberGetInput input) {
+
+        String findMemberCode = (input.xCode() != null && !input.xCode().isBlank())
+            ? input.xCode()
+            : input.paramCode();
+
+        if (findMemberCode == null || findMemberCode.isBlank()) {
+            throw new BusinessException(ErrorCode.NOT_CONTAINS_MEMBER_CODE);
+        }
+
+        Members existMembers = findMembers(findMemberCode);
+
+        ApiMemberInfo memberInfo = MembersMapper.toGetDto(existMembers);
+
+        //평가에 대한 정보를 받는 API 를 연결
+        // /api/ratings/{findMemberCode}
+        MemberRating memberRating = null;
+
+        List<MemberTag> memberTags = null;
+
+        memberRating = getMemberRating(findMemberCode);
+
+        memberTags = getMemberTags(findMemberCode);
+
+        return new MemberGetResponse(memberInfo, memberRating, memberTags);
+    }
+
+    @Override
+    @Transactional
+    public void createMember(MemberCreateInput input) {
+
+        //이미 회원가입을 한 멤버 Code인지 확인
+        if (memberJpaRepository.existsByCode(input.memberCode())) {
+            throw new BusinessException(ErrorCode.MEMBER_ALREADY_EXISTS);
+        }
+
+        //회원 가입을 하기 전 이미 해당 nick name을 사용하는 사람이 있는 지 확인.
+        checkNickNameDuplicate(input.memberCode(), input.name());
+
+        //소셜 로그인을 통한 socialMember 찾기 없으면 회원가입이 불가.
+        SocialMembers socialMembers = socialMemberJpaRepository.findSocialMembersByCode(input.memberCode())
+            .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+
+        //생성할 멤버 생성
+        Members newMember = Members.builder()
+            .nickName(input.name())
+            .gender(input.gender())
+            .code(input.memberCode())
+            .birthDate(input.birthDate())
+            .phoneNumber(input.phoneNumber())
+            .email(socialMembers.getEmail())
+            .provider(socialMembers.getProvider())
+            .providerId(socialMembers.getProviderId())
+            .build();
+
+        Members savedMember = memberJpaRepository.save(newMember);
+
+        // Kafka Event 발송.
+        memberCreateKafkaEventProducer.sendEvent(new MemberCreateEvent(savedMember.getCode()));
+
+    }
+
+    @Override
+    @Transactional
+    public void updateMember(MemberUpdateInput input) {
+        //회원 가입을 하기 전 이미 해당 nick name을 사용하는 사람이 있는 지 확인.
+        checkNickNameDuplicate(input.memberCode(), input.name());
+
+        Members existMember = findMembers(input.memberCode());
+
+        MembersMapper.toApply(existMember, input);
+
+        Members updatedMember = memberJpaRepository.save(existMember);
+
+        memberUpdateKafkaEventProducer.sendEvent(
+            new MemberUpdateEvent(updatedMember.getCode(), updatedMember.getNickName()));
+    }
+
+
+    @Override
+    @Transactional
+    public void updateMemberWorkState(MemberUpdateWorkStateInput input) {
+        Members existMember = findMembers(input.memberCode());
+
+        if (existMember.canEnableWork()) {
+            existMember.updateCanWork(true);
+        }
+
+        Members updatedMember = memberJpaRepository.save(existMember);
+    }
+
+
+    @Override
+    public void deleteMember(MemberDeleteInput input) {
+        Members existMember = findMembers(input.memberCode());
+
+        existMember.deletedMember();
+
+        memberJpaRepository.save(existMember);
+    }
+
+    @Override
+    public void existMemberByNickName(MemberExistByNameInput input) {
+        checkNickNameDuplicate(input.memberCode(), input.name());
+    }
+
+    private List<MemberTag> getMemberTags(String findMemberCode) {
+        List<MemberTag> memberTags;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-CODE", findMemberCode); // 원하는 값 설정
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ResponseDto<List<MemberTag>>> response = restTemplate.exchange(
+                requestURIGenerator.gettagsUri(findMemberCode),
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<>() {
+                }
+            );
+
+            memberTags = Objects.requireNonNull(response.getBody()).data();
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        return memberTags;
+    }
+
+    private MemberRating getMemberRating(String findMemberCode) {
+        MemberRating memberRating;
+        try {
+            ResponseEntity<ResponseDto<MemberRating>> response = restTemplate.exchange(
+                requestURIGenerator.getRatingUri(findMemberCode),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {
+                }
+            );
+
+            memberRating = Objects.requireNonNull(response.getBody()).data();
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        return memberRating;
+    }
+
+    private Members findMembers(String code) {
+        return memberJpaRepository.findMembersByCodeAndIsDeletedFalse(code)
+            .orElseThrow(() -> new BusinessException(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private void checkNickNameDuplicate(String code, String nickname) {
+        memberJpaRepository.findMembersByNickName(nickname)
+            .ifPresent(member -> {
+                if (!code.equals(member.getCode())) {
+                    throw new BusinessException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+                }
+            });
+    }
+
 
 }

@@ -4,6 +4,7 @@ import com.example.memberservice.member.entity.Members;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.kafka.common.quota.ClientQuotaAlteration.Op;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +15,11 @@ public interface MemberJpaRepository extends JpaRepository<Members, Long> {
 
     List<Members> findAllByCodeInAndIsDeletedFalse(Set<String> codes);
 
+    Optional<Members> findMembersByCodeAndIsDeletedFalse(String code);
+
     boolean existsByCode(String code);
 
+    boolean existsMembersByNickName(String nickName);
+
+    Optional<Members> findMembersByNickName(String nickName);
 }

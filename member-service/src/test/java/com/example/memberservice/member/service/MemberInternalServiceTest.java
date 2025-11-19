@@ -46,8 +46,8 @@ class MemberInternalServiceTest {
 
 
         List<Members> members = List.of(
-            createMember(code1, "AAA@gmail.com","FirstUser", true,false),
-            createMember(code2, "BBB@gmail.com","SecondUser", false,false)
+            createMember(code1, "AAA@gmail.com","FirstUser"),
+            createMember(code2, "BBB@gmail.com","SecondUser")
         );
 
         memberJpaRepository.saveAll(members);
@@ -57,7 +57,7 @@ class MemberInternalServiceTest {
 
         System.out.println(resultMemberInfos);
         //Then
-        assertThat(resultMemberInfos.memberInfos())
+        assertThat(resultMemberInfos.internalMemberInfos())
             .hasSize(members.size())
             .extracting("nickName", "memberCode", "canWork")
             .containsExactlyInAnyOrder(
@@ -75,8 +75,8 @@ class MemberInternalServiceTest {
 
 
         List<Members> members = List.of(
-            createMember(code1, "AAA@gmail.com","FirstUser", true,false),
-            createMember(code2, "BBB@gmail.com","SecondUser", false,true)
+            createMember(code1, "AAA@gmail.com","FirstUser"),
+            createMember(code2, "BBB@gmail.com","SecondUser")
         );
 
         memberJpaRepository.saveAll(members);
@@ -98,8 +98,8 @@ class MemberInternalServiceTest {
 
         String code3 = UUID.randomUUID().toString();
         List<Members> members = List.of(
-            createMember(code1, "AAA@gmail.com","FirstUser", true,false),
-            createMember(code2, "BBB@gmail.com","SecondUser", false,false)
+            createMember(code1, "AAA@gmail.com","FirstUser"),
+            createMember(code2, "BBB@gmail.com","SecondUser")
         );
 
         memberJpaRepository.saveAll(members);
@@ -120,8 +120,8 @@ class MemberInternalServiceTest {
         String code3 = UUID.randomUUID().toString(); // DB에 없는 코드
 
         List<Members> members = List.of(
-            createMember(code1, "AAA@gmail.com", "FirstUser", true,false),
-            createMember(code2, "BBB@gmail.com", "SecondUser", false,false)
+            createMember(code1, "AAA@gmail.com", "FirstUser"),
+            createMember(code2, "BBB@gmail.com", "SecondUser")
         );
 
         memberJpaRepository.saveAll(members);
@@ -137,18 +137,16 @@ class MemberInternalServiceTest {
         assertThat(result.notExists()).containsExactly(code3);
     }
 
-    private Members createMember(String code, String email,String nickName, boolean canWork, boolean isDeleted) {
+    private Members createMember(String code, String email,String nickName) {
         return Members.builder()
             .code(code)
-            .name(nickName)
+            .nickName(nickName)
             .email(email)
             .phoneNumber("010-9876-5432")
             .birthDate(LocalDate.of(1993, 5, 16))
             .gender(Gender.FEMALE)
             .provider(Provider.KAKAO)
             .providerId("kakao-67890")
-            .canWork(canWork)
-            .isDeleted(isDeleted)
             .build();
     }
 }

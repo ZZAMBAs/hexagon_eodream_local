@@ -6,8 +6,7 @@ import com.example.memberservice.member.entity.Members;
 import com.example.memberservice.member.repository.MemberJpaRepository;
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
 import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
-import com.example.memberservice.member.service.model.vo.MemberInfo;
-import java.util.ArrayList;
+import com.example.memberservice.member.service.model.vo.InternalMemberInfo;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,15 +28,14 @@ public class MemberInternalService {
         List<Members> findMembers = memberJpaRepository.findAllByCodeInAndIsDeletedFalse(setMemberCodes);
 
         if (setMemberCodes.size() > findMembers.size()) {
-
             throw new BusinessException(ErrorCode.INTERNAL_ILLEGAL_MEMBER_CODE);
         }
 
         return new MemberInfoOutput(
             findMembers.stream()
-                .map(m -> new MemberInfo(
+                .map(m -> new InternalMemberInfo(
                     m.getCode(),
-                    m.getName(),
+                    m.getNickName(),
                     m.getCanWork()
                 ))
                 .toList()

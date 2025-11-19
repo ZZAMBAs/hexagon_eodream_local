@@ -6,12 +6,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public final class Empty {
 
     private static final Empty INSTANCE = new Empty();
-    private final boolean empty = true;
-    private Empty() {
-    }
+
+    private Empty() {}
 
     public static Empty getInstance() {
         return INSTANCE;
     }
-
 }

@@ -1,7 +1,6 @@
 package com.example.memberservice.member.controller;
 
 import com.example.memberservice.common.web.model.dto.ResponseDto;
-import com.example.memberservice.member.controller.dto.vo.MemberInfo;
 import com.example.memberservice.member.controller.swagger.MemberInternalControllerSwagger;
 import com.example.memberservice.member.service.MemberInternalService;
 import com.example.memberservice.member.service.model.dto.output.MemberExistOutput;
@@ -9,7 +8,6 @@ import com.example.memberservice.member.service.model.dto.output.MemberInfoOutpu
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

@@ -36,10 +36,10 @@ public record ResponseDto<T>(
     }
 
     // 요청에 성공한 경우 (Http Status 값 있음)
-    public static ResponseDto<Empty> success(int httpStatusCode) {
+    public static ResponseDto<Empty> success(HttpStatus httpStatusCode) {
         return new ResponseDto<>(
             SUCCESS_CODE,
-            httpStatusCode,
+            httpStatusCode.value(),
             SUCCESS_MESSAGE,
             Empty.getInstance()
         );

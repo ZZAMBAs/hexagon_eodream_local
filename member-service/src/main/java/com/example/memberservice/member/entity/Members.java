@@ -14,7 +14,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.hibernate.annotations.Comment;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,9 +22,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Table(name = "members")
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class Members {
 
@@ -54,8 +51,8 @@ public class Members {
     private Boolean isDeleted = false;
 
     @Column(nullable = false)
-    @Comment("이름")
-    private String name;
+    @Comment("닉네임")
+    private String nickName;
 
     @Column(nullable = false, unique = true)
     @Comment("이메일")
@@ -85,5 +82,58 @@ public class Members {
 
     @Column(name = "can_work", nullable = false)
     private Boolean canWork;
+
+    @Builder
+    private Members(String nickName, String code, String email, String phoneNumber, LocalDate birthDate, Gender gender,
+        Provider provider, String providerId) {
+        this.nickName = nickName;
+        this.code = code;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.provider = provider;
+        this.providerId = providerId;
+
+        this.canWork = false;
+    }
+
+    // 닉네임 변경
+    public void updateNickName(String newNickName) {
+        this.nickName = newNickName;
+    }
+
+    //판매자 등록 가능 여부 확인
+    public boolean canEnableWork() {
+        return Boolean.FALSE.equals(this.canWork);
+    }
+
+    // 판매자 등록 변경
+    public void updateCanWork(Boolean canWork) {
+        this.canWork = canWork;
+    }
+
+    // 핸드폰 번호 변경
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    // 생년월일 변경
+    public void updateBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    // 성별 변경
+    public void updateGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public void deletedMember() {
+        this.isDeleted = true;
+    }
+
+    public void restoreMember() {
+        this.isDeleted = false;
+    }
 
 }

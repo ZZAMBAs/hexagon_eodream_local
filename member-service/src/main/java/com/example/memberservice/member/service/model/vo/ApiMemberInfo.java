@@ -1,12 +1,15 @@
-package com.example.memberservice.member.controller.dto.vo;
+package com.example.memberservice.member.service.model.vo;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record MemberInfo(
+public record ApiMemberInfo(
+    @Schema(description = "사용자 외부 식별자", defaultValue = "UUID")
+    String code,
+
 
     @Schema(description = "사용자 닉네임", defaultValue = "이어드림 팬 1")
-    String name,
+    String nickName,
 
     @Schema(description = "사용자 이메일", defaultValue = "devthkim0317@gmail.com")
     String email,

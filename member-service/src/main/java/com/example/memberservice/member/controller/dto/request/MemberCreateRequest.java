@@ -1,10 +1,11 @@
 package com.example.memberservice.member.controller.dto.request;
 
-import com.example.memberservice.member.entity.vo.Gender;
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.example.memberservice.member.entity.vo.Gender;
 
-public record UserUpdateRequest(
+
+public record MemberCreateRequest(
 
     @Schema(description = "사용자 닉네임", example = "이어드림1호팬")
     String name,
