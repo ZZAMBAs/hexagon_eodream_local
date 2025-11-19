@@ -1,10 +1,17 @@
 package com.example.profileservice.selfPromotion.service;
 
+import static org.apache.kafka.common.requests.FetchMetadata.log;
+
 import com.example.profileservice.common.model.vo.ErrorCode;
+import com.example.profileservice.common.model.vo.KafkaProducer;
+import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
+import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.resume.repository.ResumeRepository;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionCreateRequest;
+import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionEvent;
 import com.example.profileservice.selfPromotion.model.dto.request.SelfPromotionUpdateRequest;
+import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionEsEventData;
 import com.example.profileservice.selfPromotion.model.dto.response.SelfPromotionResponse;
 import com.example.profileservice.selfPromotion.model.entity.SelfPromotionEntity;
 import com.example.profileservice.selfPromotion.repository.SelfPromotionRepository;
@@ -12,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +29,12 @@ public class SelfPromotionService {
 
     private final SelfPromotionRepository selfPromotionRepository;
     private final ResumeRepository resumeRepository;
+    private final KafkaProducer kafkaProducer;
+    private final MemberFeignClient memberFeignClient;
+
+    // Search Service에서 사용할 토픽 이름
+    @Value("${topics.selfpromotion-events:selfpromotion-events}")
+    private String selfPromotionTopic;
 
     // 모든 활성 셀프 프로모션 게시글 목록을 최신순으로 조회
     public List<SelfPromotionResponse> getAllPromotions() {
@@ -66,6 +80,12 @@ public class SelfPromotionService {
 
         selfPromotionRepository.save(promotion);
 
+        SelfPromotionResponse response = toResponse(promotion);
+
+        // 3. 이벤트 발행 (CREATE)
+        kafkaProducer.send(selfPromotionTopic,
+                SelfPromotionEvent.create(SelfPromotionEsEventData.fromResponse(response)));
+
         return toResponse(promotion);
     }
 
@@ -87,6 +107,12 @@ public class SelfPromotionService {
                 request.resumeCode()
         );
 
+        SelfPromotionResponse response = toResponse(promotion);
+
+        // 4. 이벤트 발행 (UPDATE)
+        kafkaProducer.send(selfPromotionTopic,
+                SelfPromotionEvent.update(SelfPromotionEsEventData.fromResponse(response)));
+
         return toResponse(promotion);
     }
 
@@ -98,6 +124,32 @@ public class SelfPromotionService {
 
         // 2. Soft Delete 처리
         promotion.delete();
+
+        SelfPromotionResponse response = toResponse(promotion);
+
+        // 3. 이벤트 발행 (DELETE)
+        kafkaProducer.send(selfPromotionTopic,
+                SelfPromotionEvent.delete(promotionCode));
+    }
+
+    // 회원 코드로 닉네임을 조회하는 헬퍼 메서드
+    private String getMemberNickname(String memberCode) {
+        try {
+            ResponseDto<MemberInfoOutput> response = memberFeignClient.getMemberInfoByCode(List.of(memberCode));
+
+            if (response.getData() == null || response.getData().members().isEmpty()) {
+                // 회원 정보는 존재하지만(컨트롤러에서 예외 처리) 빈 목록일 경우
+                log.warn("Member info not found for code: {}", memberCode);
+                return "알 수 없음";
+            }
+
+            return response.getData().members().get(0).nickName();
+
+        } catch (Exception e) {
+            // 통신 오류 발생 시
+            log.error("Failed to get member nickname for code: {}", memberCode, e);
+            return "조회 실패";
+        }
     }
 
     // promotionCode로 엔티티를 조회하고, 요청 memberCode와 작성자가 일치하는지 확인
@@ -123,9 +175,13 @@ public class SelfPromotionService {
 
     // SelfPromotionEntity를 SelfPromotionResponse DTO로 변환
     private SelfPromotionResponse toResponse(SelfPromotionEntity entity) {
+        // 1. 회원 닉네임 조회
+        String memberNickname = getMemberNickname(entity.getMemberCode());
+
         return new SelfPromotionResponse(
                 entity.getCode(),
                 entity.getMemberCode(),
+                memberNickname,
                 entity.getTitle(),
                 entity.getContent(),
                 entity.getPaymentType(),

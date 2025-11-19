@@ -1,7 +1,9 @@
 package com.example.profileservice.tag.service;
 
 import com.example.profileservice.common.model.vo.ErrorCode;
+import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.exception.CustomException;
+import com.example.profileservice.tag.model.dto.request.TagEvent;
 import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
 import com.example.profileservice.tag.model.entity.MemberTagEntity;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,11 @@ public class TagService {
 
     private final TagRepository tagRepository;
     private final MemberTagRepository memberTagRepository;
+    private final KafkaProducer kafkaProducer;
+
+    // Search Service에서 사용할 토픽 이름
+    @Value("${topics.tag-events:tag-events}")
+    private String tagTopic;
 
     // 전체 태그 목록 조회
     public List<TagResponse> getAllTags() {
@@ -46,6 +54,11 @@ public class TagService {
                 .build();
 
         TagEntity savedTag = tagRepository.save(newTag);
+
+        TagResponse response = toResponse(savedTag);
+
+        // 3. 이벤트 발행
+        kafkaProducer.send(tagTopic, TagEvent.create(response));
 
         return toResponse(savedTag);
     }
@@ -88,17 +101,31 @@ public class TagService {
         MemberTagEntity memberTag = MemberTagEntity.create(memberCode, tagCode);
 
         memberTagRepository.save(memberTag);
+
+        // 4. 이벤트 발행 (회원의 태그 목록이 변경되었음을 알림)
+        // MemberTagEntity의 변경은 회원 프로필 데이터의 변경이므로, 별도의 MemberProfileUpdate 이벤트를 발행해야 할 수 있으나,
+        // 현재는 TagEvent를 활용하여 변경 사실을 알림
+        TagResponse response = toResponse(tag); // 연결된 태그 정보
+
+        kafkaProducer.send(tagTopic, TagEvent.update(response));
     }
 
     // 마이페이지에서 특정 태그 연결을 해제
     @Transactional
     public void unlinkMemberTag(String memberCode, String tagCode) {
         // 1. 연결된 MemberTagEntity 조회
+        TagEntity tag = tagRepository.findByCode(tagCode)
+                .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND));
+
         MemberTagEntity memberTag = memberTagRepository.findByMemberCodeAndTagCode(memberCode, tagCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_TAG_NOT_FOUND));
 
         // 2. 삭제
         memberTagRepository.delete(memberTag);
+
+        // 3. 이벤트 발행 (회원의 태그 목록이 변경되었음을 알림)
+        TagResponse response = toResponse(tag);
+        kafkaProducer.send(tagTopic, TagEvent.update(response));
     }
 
     // 회원 태그 목록 동기화

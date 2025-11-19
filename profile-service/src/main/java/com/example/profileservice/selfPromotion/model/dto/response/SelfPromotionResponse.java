@@ -12,6 +12,9 @@ public record SelfPromotionResponse(
         @Schema(description = "회원 코드 (작성자)", example = "member-uuid-code")
         String memberCode,
 
+        @Schema(description = "작성자 닉네임", example = "프리랜서_")
+        String memberNickname,
+
         @Schema(description = "프로모션 제목", example = "Spring Cloud 기반 MSA 전문가를 찾으세요?")
         String title,
 

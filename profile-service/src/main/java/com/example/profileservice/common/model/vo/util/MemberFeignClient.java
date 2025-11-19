@@ -1,0 +1,21 @@
+package com.example.profileservice.common.model.vo.util;
+
+import com.example.profileservice.common.model.vo.ResponseDto;
+import com.example.profileservice.rating.model.dto.request.MemberExistOutput;
+import java.util.List;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+// member-service의 /internal/members 경로로 요청
+@FeignClient(name = "MEMBER-SERVICE", url = "http://MEMBER-SERVICE/internal/members")
+public interface MemberFeignClient {
+
+    @GetMapping("/exist")
+    ResponseDto<MemberExistOutput> existMemberByCode(
+            @RequestParam(name = "member-code") List<String> memberCodes);
+
+    @GetMapping
+    ResponseDto<MemberInfoOutput> getMemberInfoByCode(
+            @RequestParam(name = "member-code") List<String> memberCodes);
+}
