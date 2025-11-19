@@ -1,6 +1,7 @@
 package com.example.profileservice.resume;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -9,9 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.profileservice.common.model.vo.ResponseDto;
+import com.example.profileservice.common.model.vo.util.MemberFeignClient;
+import com.example.profileservice.common.model.vo.util.TestKafkaConfig;
 import com.example.profileservice.experience.model.dto.request.ExperienceRequest;
 import com.example.profileservice.experience.model.entity.ExperienceEntity;
 import com.example.profileservice.experience.repository.ExperienceRepository;
+import com.example.profileservice.rating.model.dto.request.MemberExistOutput;
 import com.example.profileservice.resume.model.dto.request.ResumeCreateRequest;
 import com.example.profileservice.resume.model.dto.request.ResumeUpdateRequest;
 import com.example.profileservice.resume.model.dto.response.ResumeSimpleResponse;
@@ -26,25 +30,28 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
+@Import(TestKafkaConfig.class)
 public class ResumeControllerTest {
 
     private static final String BASE_URL = "/api/resumes";
     private static final String TEST_MEMBER_CODE = "member-test-uuid-001";
     private static final String OTHER_MEMBER_CODE = "member-test-uuid-999"; // 권한 테스트용
     private static final String HEADER_X_CODE = "X-CODE";
+    private static final String INVALID_MEMBER_CODE = "invalid-member-code-999";
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,6 +65,9 @@ public class ResumeControllerTest {
     @Autowired
     private ExperienceRepository experienceRepository;
 
+    @MockitoBean
+    private MemberFeignClient memberServiceClient;
+
     private ResumeEntity initialResume;
     private ExperienceEntity initialExperience;
     private ResumeCreateRequest createRequest;
@@ -66,6 +76,16 @@ public class ResumeControllerTest {
 
     @BeforeEach
     void setUp() {
+
+        // Mocking 설정: 기본적으로 모든 유효한 요청에 대해 성공 응답 반환
+        List<String> validCodes = List.of(TEST_MEMBER_CODE, OTHER_MEMBER_CODE);
+        MemberExistOutput mockExistOutput = new MemberExistOutput(validCodes, List.of());
+        ResponseDto<MemberExistOutput> mockSuccessResponse = ResponseDto.success(mockExistOutput);
+
+        // memberServiceClient.existMemberByCode 호출 시 성공 응답 반환하도록 Mocking
+        Mockito.when(memberServiceClient.existMemberByCode(anyList()))
+                .thenReturn(mockSuccessResponse);
+
         // 테스트 환경 고정 시간 설정
         now = Instant.parse("2025-11-17T10:00:00Z");
 
@@ -211,6 +231,34 @@ public class ResumeControllerTest {
         // 삭제 후에도 실제 엔티티는 남아있는지 확인
         assertThat(resumeRepository.findById(initialResume.getId())).isPresent();
         assertThat(resumeRepository.findById(initialResume.getId()).get().isDeleted()).isTrue();
+    }
+
+    @Test
+    @DisplayName("POST /api/resumes - 유효하지 않은 회원 코드로 등록 시도 시 400 Bad Request")
+    void createResume_InvalidMemberCode_Failure() throws Exception {
+        // given: 유효하지 않은 회원 코드를 시뮬레이션하기 위한 Mocking 재설정
+        // INVALID_MEMBER_CODE는 존재하지 않는다고 Mocking
+
+        List<String> validCodes = List.of(INVALID_MEMBER_CODE);
+
+        // INVALID_MEMBER_CODE는 존재하지 않도록 응답 설정
+        MemberExistOutput mockExistOutputFailure = new MemberExistOutput(
+                List.of(), // 존재하는 코드 없음
+                List.of(INVALID_MEMBER_CODE) // 존재하지 않는 코드
+        );
+        ResponseDto<MemberExistOutput> mockFailureResponse = ResponseDto.success(mockExistOutputFailure);
+
+        // 해당 코드를 포함하는 호출에 대해서만 실패 응답을 반환하도록 설정
+        Mockito.when(memberServiceClient.existMemberByCode(validCodes))
+                .thenReturn(mockFailureResponse);
+
+        // when & then: 유효하지 않은 회원 코드로 이력서 등록 시도
+        mockMvc.perform(post(BASE_URL)
+                        .header(HEADER_X_CODE, INVALID_MEMBER_CODE) // 유효하지 않은 코드를 HEADER에 사용
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(3006));
     }
 
     //Experience API 테스트

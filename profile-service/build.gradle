@@ -31,9 +31,9 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5' // Swagger
 	implementation 'org.springframework.boot:spring-boot-starter-validation' // Validation
 	runtimeOnly 'com.mysql:mysql-connector-j' // MySQL
-//	runtimeOnly 'com.h2database:h2' // H2
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign' // Feign Client
 	implementation 'org.springframework.kafka:spring-kafka' // Kafka
+	testRuntimeOnly 'com.h2database:h2' // H2 (테스트 시에만 로드)
 
 	// 롬복
 	compileOnly 'org.projectlombok:lombok'

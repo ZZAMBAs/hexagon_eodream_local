@@ -2,6 +2,7 @@ package com.example.profileservice.selfPromotion.service;
 
 import static org.apache.kafka.common.requests.FetchMetadata.log;
 
+import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.ResponseDto;
@@ -137,13 +138,13 @@ public class SelfPromotionService {
         try {
             ResponseDto<MemberInfoOutput> response = memberFeignClient.getMemberInfoByCode(List.of(memberCode));
 
-            if (response.getData() == null || response.getData().members().isEmpty()) {
+            if (response.getData() == null || response.getData().internalMemberInfos().isEmpty()) {
                 // 회원 정보는 존재하지만(컨트롤러에서 예외 처리) 빈 목록일 경우
                 log.warn("Member info not found for code: {}", memberCode);
                 return "알 수 없음";
             }
 
-            return response.getData().members().get(0).nickName();
+            return response.getData().internalMemberInfos().get(0).nickName();
 
         } catch (Exception e) {
             // 통신 오류 발생 시

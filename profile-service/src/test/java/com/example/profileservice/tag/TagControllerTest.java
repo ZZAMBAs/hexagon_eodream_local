@@ -1,6 +1,8 @@
 package com.example.profileservice.tag;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.profileservice.common.model.vo.KafkaProducer;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.tag.model.dto.request.TagRequest;
 import com.example.profileservice.tag.model.dto.response.TagResponse;
@@ -28,14 +31,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public class TagControllerTest {
 
     private static final String BASE_URL = "/api/tags";
@@ -54,11 +56,19 @@ public class TagControllerTest {
     @Autowired
     private MemberTagRepository memberTagRepository;
 
+    @MockitoBean
+    private KafkaProducer kafkaProducer;
+
     private TagEntity springTag;
     private TagEntity javaTag;
 
     @BeforeEach
     void setUp() {
+        // KafkaProducer Mocking 설정
+        // send 메서드가 호출될 때 아무 작업도 하지 않도록 설정
+        // TagService와 SelfPromotionService가 KafkaProducer를 사용하기 때문에 필요
+        doNothing().when(kafkaProducer).send(any(String.class), any());
+
         // 테스트 전용 기본 데이터 설정
         springTag = TagEntity.builder().skill("Spring Boot").build();
         javaTag = TagEntity.builder().skill("Java").build();

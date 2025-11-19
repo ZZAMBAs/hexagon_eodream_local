@@ -6,6 +6,7 @@ import static com.example.profileservice.common.model.vo.ErrorCode.RATING_MEMBER
 import com.example.profileservice.common.model.vo.ErrorCode;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.exception.CustomException;
+import com.example.profileservice.common.model.vo.util.MemberFeignClient;
 import com.example.profileservice.rating.model.dto.request.MemberExistOutput;
 import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.model.dto.response.RatingResponse;
@@ -24,7 +25,7 @@ public class RatingService {
 
     private final RatingRepository ratingRepository;
     private final EntityManager entityManager;
-    private final MemberServiceClient memberServiceClient;
+    private final MemberFeignClient memberFeignClient;
 
     // 특정 회원의 평가 카운트를 조회
     public RatingResponse getMemberRating(String receiverCode) {
@@ -44,7 +45,7 @@ public class RatingService {
 
         // 2. Member 모듈을 통해 callerCode와 receiverCode 모두 유효한 회원인지 검증
         List<String> codesToValidate = List.of(callerCode, receiverCode);
-        ResponseDto<MemberExistOutput> response = memberServiceClient.existMemberByCode(codesToValidate);
+        ResponseDto<MemberExistOutput> response = memberFeignClient.existMemberByCode(codesToValidate);
 
         if (response.getData().notExists() != null && !response.getData().notExists().isEmpty()) {
             // 유효하지 않은 코드가 하나라도 있다면 에러 발생

@@ -1,5 +1,6 @@
 package com.example.profileservice.common.model.vo.util;
 
+import com.example.memberservice.member.service.model.dto.output.MemberInfoOutput;
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.rating.model.dto.request.MemberExistOutput;
 import java.util.List;
