@@ -14,6 +14,8 @@ public enum ResponseDtoStatus {
     CHATROOM_NOT_INCLUDE_SELF(1001, "현재 로그인한 사용자는 채팅방에 포함되어야 합니다.", HttpStatus.BAD_REQUEST),
     CHATROOM_ALREADY_EXISTS(1002, "이미 채팅방이 존재합니다.", HttpStatus.BAD_REQUEST),
     CHATROOM_INVALID_MEMBER(1003, "유효하지 않은 회원은 채팅방에 포함될 수 없습니다.", HttpStatus.BAD_REQUEST),
+    CHATROOM_NOT_FOUND(1004, "채팅방이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    CHATROOM_UNAUTHORIZED(1005, "해당 채팅방에 접근할 권한이 없습니다.", HttpStatus.UNAUTHORIZED),
 
     // 유효성 검사 실패
     VALIDATION_FAILED(40000, "유효하지 않은 입력입니다.", HttpStatus.BAD_REQUEST),

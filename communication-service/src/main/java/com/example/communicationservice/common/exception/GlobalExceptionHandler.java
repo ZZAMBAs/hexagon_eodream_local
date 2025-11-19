@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
 
     // 커스텀 예외 처리
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ResponseDto<Empty>> handleChatRoomException(CustomException ex) {
+    public ResponseEntity<ResponseDto<Empty>> handleCustomException(CustomException ex) {
         ResponseDtoStatus status = ex.getStatus();
 
         return ResponseEntity
