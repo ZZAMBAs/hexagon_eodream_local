@@ -2,7 +2,7 @@ package com.example.contractservice.contract.service.batch.writer;
 
 import com.example.contractservice.contract.common.ContractStatus;
 import com.example.contractservice.contract.entity.ContractEntity;
-import com.example.contractservice.contract.service.event.dto.ContractEvent;
+import com.example.contractservice.contract.service.dto.event.ContractEvent;
 import com.example.contractservice.contract.repository.ContractRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;

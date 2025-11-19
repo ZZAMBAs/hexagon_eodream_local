@@ -12,7 +12,7 @@ import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.domain.vo.ContractInfo;
 import com.example.contractservice.contract.entity.ContractEntity;
-import com.example.contractservice.contract.service.event.dto.ContractEvent;
+import com.example.contractservice.contract.service.dto.event.ContractEvent;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractConfirmRequest;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
@@ -231,7 +231,7 @@ public class ContractService {
                 .reduce(0L, Long::sum); // 총 금액
 
         DepositProcessRequest depositProcessRequest = new DepositProcessRequest(request.xCode(), totalAmount, PAYMENT_COMMENT);
-        depositService.process(depositProcessRequest, depositService::withdraw);
+        depositService.withdraw(depositProcessRequest);
     }
 
     private void saveSettlements(List<Contract> contracts) {

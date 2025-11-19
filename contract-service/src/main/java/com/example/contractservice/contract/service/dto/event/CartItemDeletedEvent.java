@@ -1,4 +1,4 @@
-package com.example.contractservice.contract.service.event.dto;
+package com.example.contractservice.contract.service.dto.event;
 
 public record CartItemDeletedEvent(
         String code
