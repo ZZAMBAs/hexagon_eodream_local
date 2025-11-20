@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
-import com.example.profileservice.common.model.vo.util.TestKafkaConfig;
+import com.example.profileservice.common.model.util.TestKafkaConfig;
 import com.example.profileservice.rating.model.dto.request.RatingRequest;
 import com.example.profileservice.rating.repository.RatingRepository;
 import com.example.profileservice.rating.service.RatingService;

@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.profileservice.common.model.vo.ResponseDto;
 import com.example.profileservice.common.model.vo.util.MemberExistOutput;
 import com.example.profileservice.common.model.vo.util.MemberFeignClient;
-import com.example.profileservice.common.model.vo.util.TestKafkaConfig;
+import com.example.profileservice.common.model.util.TestKafkaConfig;
 import com.example.profileservice.experience.model.dto.request.ExperienceRequest;
 import com.example.profileservice.experience.model.entity.ExperienceEntity;
 import com.example.profileservice.experience.repository.ExperienceRepository;

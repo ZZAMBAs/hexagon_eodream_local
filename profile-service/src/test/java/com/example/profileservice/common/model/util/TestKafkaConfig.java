@@ -1,4 +1,4 @@
-package com.example.profileservice.common.model.vo.util;
+package com.example.profileservice.common.model.util;
 
 
 import com.example.profileservice.common.model.vo.KafkaProducer;
