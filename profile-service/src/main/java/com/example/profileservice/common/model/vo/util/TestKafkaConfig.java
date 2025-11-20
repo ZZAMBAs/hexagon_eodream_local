@@ -1,5 +1,6 @@
 package com.example.profileservice.common.model.vo.util;
 
+
 import com.example.profileservice.common.model.vo.KafkaProducer;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
