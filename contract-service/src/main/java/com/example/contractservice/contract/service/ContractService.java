@@ -8,7 +8,6 @@ import com.example.contractservice.common.domain.exception.DomainException;
 import com.example.contractservice.contract.controller.dto.request.ContractCreateRequest;
 import com.example.contractservice.contract.controller.dto.response.ContractBriefWithNicknameResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractCreateResponse;
-import com.example.contractservice.contract.controller.dto.response.ContractInfoResponse;
 import com.example.contractservice.contract.controller.dto.response.ContractPayResponse;
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.domain.exception.ContractException;
@@ -19,7 +18,6 @@ import com.example.contractservice.contract.service.dto.request.ContractPayServi
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
