@@ -1,17 +1,24 @@
 package org.hexagon.s3service.service;
 
+import jakarta.transaction.Transactional;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.s3service.dto.PresignedDownloadListResponse;
 import org.hexagon.s3service.dto.PresignedDownloadResponse;
 import org.hexagon.s3service.dto.PresignedUploadResponse;
 import org.hexagon.core.vo.ServiceName;
-import org.hexagon.s3service.vo.FileType;
+import org.hexagon.s3service.entity.S3Resource;
+import org.hexagon.s3service.repository.S3ResourceRepository;
+import org.hexagon.core.vo.FileType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -27,15 +34,28 @@ public class S3Service {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private final S3ResourceRepository s3ResourceRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    // 파일을 업로드 하는 시점에(의뢰글, 회원 정보 수정 등은 완료 x) 업로드 Presigned URL 생성
+    // 파일을 업로드 하는 시점에(게시글 작성, 회원 정보 수정 등은 완료 x) 업로드 Presigned URL 생성(/temp에 업로드)
     public PresignedUploadResponse createUploadUrl(ServiceName serviceName, String filename, String contentType) {
         String service = serviceName.toLower();
         String key = service + "/temp/" + UUID.randomUUID().toString() + "-" + filename;
 
+        return getPresignedUploadResponse(key, contentType);
+    }
+
+    // 채팅에서 파일 업로드할 때 Presigned URL 생성
+    public PresignedUploadResponse createUploadUrlForChats(ServiceName serviceName, String filename, String contentType) {
+        String service = serviceName.toLower();
+        String key = service + "/" + UUID.randomUUID().toString() + "-" + filename;
+
+        return getPresignedUploadResponse(key, contentType);
+    }
+
+    private PresignedUploadResponse getPresignedUploadResponse(String key, String contentType) {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
@@ -72,6 +92,11 @@ public class S3Service {
         return new PresignedDownloadListResponse(urls);
     }
 
+    // code에 해당하는 파일들의 다운로드 Presigned URL 리스트 생성
+    public PresignedDownloadListResponse createDownloadUrls(String code) {
+        List<String> keys = s3ResourceRepository.findKeysByServiceCode(code);
+        return createDownloadUrls(keys);
+    }
 
     // 하나의 key에 대해 다운로드 Presigned URL 생성
     private PresignedDownloadResponse createDownloadUrl(String key) {
@@ -110,5 +135,76 @@ public class S3Service {
                 .build();
 
         s3Client.deleteObject(deleteRequest);
+    }
+
+    public List<S3Resource> saveResources(String code, List<String> tempKeys) {
+
+        return tempKeys.stream()
+                .map(tempKey -> {
+                    String destKey = moveFromTemp(tempKey); // temp → 바깥으로 이동
+                    return saveResource(code, destKey);     // DB에는 destKey를 저장
+                })
+                .toList();
+    }
+
+    // /temp 에서 바깥으로 빼는 메소드
+    private String moveFromTemp(String tempKey) {
+        // 1) tempKey에서 /temp 제거 → destKey
+        String destKey = tempKey.replace("/temp/", "/");
+
+        // 2) 복사
+        CopyObjectRequest copyRequest = CopyObjectRequest.builder()
+                .sourceBucket(bucket)
+                .sourceKey(tempKey)
+                .destinationBucket(bucket)
+                .destinationKey(destKey)
+                .build();
+
+        s3Client.copyObject(copyRequest);
+
+        // 3) 삭제
+        deleteObject(tempKey);
+
+        return destKey;
+    }
+
+    // s3_resource 테이블에 데이터 저장
+    private S3Resource saveResource(String code, String key) {
+        FileType fileType = FileType.fromKey(key);
+        S3Resource resource = S3Resource.builder()
+                .serviceCode(code)
+                .key(key)
+                .fileType(fileType)
+                .uploadedAt(Instant.now())
+                .build();
+
+        return s3ResourceRepository.save(resource);
+    }
+
+    @Transactional
+    public void syncAttachments(String code, List<String> updatedKeys) {
+        // 현재 DB에 있는 key 리스트
+        List<String> currentKeys = s3ResourceRepository.findKeysByServiceCode(code);
+
+        // 최종적으로 유지되어야 할 key들
+        Set<String> finalKeys = new HashSet<>();
+
+        for (String key : updatedKeys) {
+            // 새롭게 추가된 key
+            if (key.contains("/temp/")) {
+                String destKey = moveFromTemp(key);
+                saveResource(code, destKey);
+                finalKeys.add(destKey);
+            } else {
+                finalKeys.add(key);
+            }
+        }
+
+        for (String oldKey : currentKeys) {
+            if (!finalKeys.contains(oldKey)) {
+                deleteObject(oldKey);
+                s3ResourceRepository.deleteByKey(oldKey);
+            }
+        }
     }
 }

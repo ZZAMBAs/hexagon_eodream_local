@@ -10,10 +10,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
-import org.hexagon.s3service.vo.FileType;
+import org.hexagon.core.vo.FileType;
 
 @Entity
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "s3_resource")
 public class S3Resource {
@@ -22,8 +26,8 @@ public class S3Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String code;
+    @Column(name = "service_code")
+    private String serviceCode;
 
     @Column(name = "s3_key")
     private String key;
