@@ -2,7 +2,7 @@ package com.example.communicationservice.mapper;
 
 import com.example.communicationservice.client.dto.output.FileDownloadUrlGenerateOutput;
 import com.example.communicationservice.client.dto.output.FileUploadUrlGenerateOutput;
-import com.example.communicationservice.controller.dto.FileInfo;
+import com.example.communicationservice.controller.dto.response.ChatFileReadResponse;
 import com.example.communicationservice.controller.dto.request.ChatFileSendRequest;
 import com.example.communicationservice.controller.dto.response.ChatFileSendResponse;
 import com.example.communicationservice.controller.dto.response.ChatFileUploadUrlGenerateResponse;
@@ -13,12 +13,12 @@ public abstract class FileMapper {
 
     private FileMapper() {} // 인스턴스화 방지
 
-    public static FileInfo from(File file) {
-        if (file == null) {
-            return null;
-        }
-
-        return new FileInfo(file.getKey());
+    public static ChatFileReadResponse toReadResponse(FileDownloadUrlGenerateOutput output) {
+        return new ChatFileReadResponse(
+            output.key(),
+            output.queryString(),
+            output.fileType()
+        );
     }
 
     public static File toEntity(ChatFileSendRequest request) {
@@ -38,7 +38,7 @@ public abstract class FileMapper {
         );
     }
 
-    public static ChatFileSendResponse from(FileDownloadUrlGenerateOutput output) {
+    public static ChatFileSendResponse toSendResponse(FileDownloadUrlGenerateOutput output) {
         return new ChatFileSendResponse(
             output.key(),
             output.queryString(),
