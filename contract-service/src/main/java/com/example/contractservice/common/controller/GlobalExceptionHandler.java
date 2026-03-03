@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.dto.Empty;
@@ -16,6 +18,7 @@ import org.hexagon.core.dto.Empty;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseDto<Empty> handle(MethodArgumentNotValidException e) {
         String allExceptionMessages = e.getBindingResult().getAllErrors().stream().map(err -> err.getDefaultMessage())
                 .collect(Collectors.joining(" | "));
@@ -26,8 +29,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BindException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<Empty> handle(BindException e) {
-        String bindingFailObjects = e.getBindingResult().getAllErrors().stream().map(err -> err.getObjectName())
+        String bindingFailObjects = e.getBindingResult().getAllErrors().stream().map(ObjectError::getObjectName)
                 .collect(Collectors.joining(", "));
 
         String message = StringUtil.format("잘못된 타입의 입력이 존재합니다. 다음을 확인하십시오: {}", bindingFailObjects);
@@ -36,6 +40,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseDto<Empty> handle() {
         String message = "잘못된 타입의 입력이 있거나 입력 구조가 잘못되었습니다.";
 
@@ -43,6 +48,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseDto<Empty> handle(Exception e) {
         log.error("알 수 없는 예외 발생. 빠른 확인 필요!", e);
 
