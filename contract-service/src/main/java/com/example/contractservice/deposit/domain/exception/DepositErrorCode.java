@@ -13,6 +13,8 @@ public class DepositErrorCode extends DomainErrorCode {
     public static final DepositErrorCode NO_HISTORY_ENTITY;
     public static final DepositErrorCode DEPOSIT_BATCH_UPDATE_FAILED;
 
+    public static final DepositErrorCode INVALID_STATUS_FOR_COMPLETED;
+
     static {
         NO_DEPOSIT_ENTITY = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4100, "해당하는 예치금이 존재하지 않습니다.");
         NOT_ENOUGH_AMOUNT = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4101, "예치금 잔액이 부족합니다.");
@@ -24,6 +26,7 @@ public class DepositErrorCode extends DomainErrorCode {
 
         DEPOSIT_BATCH_UPDATE_FAILED = new DepositErrorCode(HttpStatus.INTERNAL_SERVER_ERROR, 4130, "예치금 배치 업데이트 중에 업데이트 되지 않은 데이터가 존재합니다.");
 
+        INVALID_STATUS_FOR_COMPLETED = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4140, "관리자 예치금 배치 정산을 위해서는 PENDING 상태여야만 합니다.");
     }
 
    private DepositErrorCode(HttpStatus httpStatusCode, int statusCode, String message) {
