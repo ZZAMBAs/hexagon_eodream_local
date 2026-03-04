@@ -16,6 +16,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Getter
@@ -35,6 +36,10 @@ public class DepositPendingEntity {
     @CreatedDate
     @Column(name = "created_at", nullable = false, columnDefinition = "datetime(6)")
     private Instant createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false, columnDefinition = "datetime(6)")
+    private Instant updatedAt;
 
     @Column(name = "contract_code", nullable = false, columnDefinition = "CHAR(36)")
     private String contractCode;

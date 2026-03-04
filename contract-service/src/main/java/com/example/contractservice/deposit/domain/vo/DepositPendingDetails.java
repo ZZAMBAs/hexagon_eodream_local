@@ -12,9 +12,8 @@ public class DepositPendingDetails {
     private DepositPendingStatus status;
     private Instant processedAt;
 
-    public DepositPendingDetails(Long amount, Instant processedAt) {
+    public DepositPendingDetails(Long amount) {
         this.amount = amount;
-        this.processedAt = processedAt;
         this.status = DepositPendingStatus.PENDING;
     }
 

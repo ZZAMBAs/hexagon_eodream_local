@@ -13,7 +13,9 @@ import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.dto.request.ContractPayProcessRequest;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.example.contractservice.contract.service.mapper.ContractSettlementMapper;
+import com.example.contractservice.deposit.service.DepositPendingService;
 import com.example.contractservice.deposit.service.DepositService;
+import com.example.contractservice.deposit.service.dto.request.DepositPendingSaveRequest;
 import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
 import com.example.contractservice.settlement.service.SettlementService;
 import java.time.Duration;
@@ -21,7 +23,6 @@ import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hexagon.core.events.contract.CommissionOpenCloseEvent;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,13 +34,11 @@ public class ContractPayService {
     private static final String PAYMENT_COMMENT = "계약 결제";
 
     private final DepositService depositService;
+    private final DepositPendingService depositPendingService;
     private final SettlementService settlementService;
     private final ContractRepository contractRepository;
     private final CommissionsCapacityRepository commissionsCapacityRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
-
-    @Value("${admin.member.code}")
-    private String adminMemberCode;
 
     @Transactional
     @OptimisticRetry
@@ -130,8 +129,7 @@ public class ContractPayService {
         DepositProcessRequest depositProcessRequest = new DepositProcessRequest(xCode, contract.getCode(), totalAmount, PAYMENT_COMMENT);
         depositService.withdraw(depositProcessRequest);
 
-        DepositProcessRequest adminDepositProcessRequest = new DepositProcessRequest(adminMemberCode, contract.getCode(), totalAmount, "계약 결제 금액 수금");
-        depositService.transfer(adminDepositProcessRequest); // 관리자 예치금으로 입금
+        depositPendingService.save(new DepositPendingSaveRequest(totalAmount, contract.getCode()));
     }
 
     private void saveSettlements(Contract contract) {

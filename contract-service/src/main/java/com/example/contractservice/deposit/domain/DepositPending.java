@@ -10,11 +10,11 @@ public class DepositPending {
     private DepositPendingDetails depositPendingDetails;
 
     private Instant createdAt;
+    private Instant updatedAt;
 
-    public DepositPending(String contractCode, DepositPendingDetails depositPendingDetails, Instant createdAt) {
+    public DepositPending(String contractCode, DepositPendingDetails depositPendingDetails) {
         this.contractCode = contractCode;
         this.depositPendingDetails = depositPendingDetails;
-        this.createdAt = createdAt;
     }
 
     public void markCompleted() {
@@ -36,5 +36,9 @@ public class DepositPending {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 }
