@@ -70,7 +70,7 @@ public class SettlementService {
         return settlements;
     }
 
-    public void deleteAllRelatedWith(Contract contract) {
-        settlementRepository.hardDeleteAllBy(contract.getCode());
+    public void deleteCancelableSettlements(Contract contract) {
+        settlementRepository.deleteCancelableSettlementsByContractCode(contract.getCode());
     }
 }

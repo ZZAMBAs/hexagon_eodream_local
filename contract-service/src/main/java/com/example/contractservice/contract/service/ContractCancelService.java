@@ -52,7 +52,7 @@ public class ContractCancelService {
     private void rollbackPaidContract(Contract contract) {
         publishEventIfCommissionFull(contract); // 의뢰글 마감 상태였다면 의뢰글 오픈 이벤트 발행
         refund(contract); // 환불
-        removeSettlements(contract); // 정산 데이터 제거
+        deleteCancelableSettlements(contract); // 정산 데이터 제거
     }
 
     private void publishEventIfCommissionFull(Contract contract) {
@@ -81,12 +81,7 @@ public class ContractCancelService {
         depositService.transfer(memberTransferRequest);
     }
 
-    /** 해당 계약과 관련된 모든 정산 데이터를 하드 딜리트합니다.
-     *
-     * @param contract 정산 데이터를 지울 관련 계약
-     */
-    private void removeSettlements(Contract contract) {
-        settlementService.deleteAllRelatedWith(contract);
+    private void deleteCancelableSettlements(Contract contract) {
+        settlementService.deleteCancelableSettlements(contract);
     }
-
 }
