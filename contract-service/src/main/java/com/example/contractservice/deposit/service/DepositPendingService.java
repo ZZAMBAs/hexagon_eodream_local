@@ -13,4 +13,8 @@ public class DepositPendingService {
     public void save(DepositPendingSaveRequest depositPendingSaveRequest) {
         depositPendingRepository.save(depositPendingSaveRequest.toDomain());
     }
+
+    public boolean cancelPendingByContractCode(String contractCode) {
+        return depositPendingRepository.cancelPendingByContractCode(contractCode);
+    }
 }
