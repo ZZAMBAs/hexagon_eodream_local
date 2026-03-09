@@ -1,7 +1,6 @@
 package com.example.contractservice.deposit.entity;
 
 import com.example.contractservice.deposit.common.DepositPendingStatus;
-import com.example.contractservice.deposit.domain.DepositPending;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -63,11 +62,7 @@ public class DepositPendingEntity {
         this.status = DepositPendingStatus.PENDING;
     }
 
-    public static DepositPendingEntity toEntity(DepositPending depositPending) {
-        return new DepositPendingEntity(
-                depositPending.getContractCode(),
-                depositPending.getDepositPendingDetails().getAmount()
-        );
+    public static DepositPendingEntity create(String contractCode, Long amount) {
+        return new DepositPendingEntity(contractCode, amount);
     }
-
 }
