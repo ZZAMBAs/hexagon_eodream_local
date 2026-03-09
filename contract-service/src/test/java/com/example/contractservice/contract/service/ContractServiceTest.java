@@ -1,6 +1,7 @@
 package com.example.contractservice.contract.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,19 +25,24 @@ import com.example.contractservice.contract.service.dto.response.MemberInfoRespo
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberInfo;
 import com.example.contractservice.contract.service.dto.response.MemberInfoResponse.MemberRole;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
+import com.example.contractservice.deposit.common.DepositPendingStatus;
 import com.example.contractservice.deposit.entity.DepositEntity;
+import com.example.contractservice.deposit.entity.DepositPendingEntity;
 import com.example.contractservice.deposit.repository.DepositHistoryJpaRepository;
 import com.example.contractservice.deposit.repository.DepositJpaRepository;
+import com.example.contractservice.deposit.repository.DepositPendingJpaRepository;
 import com.example.contractservice.settlement.entity.SettlementEntity;
 import com.example.contractservice.settlement.repository.SettlementJpaRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.hexagon.core.dto.ResponseDto;
 import org.hexagon.core.vo.PaymentType;
@@ -49,8 +55,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.core.KafkaAdmin;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
@@ -68,10 +72,6 @@ class ContractServiceTest {
     CommissionsCapacityJpaRepository commissionsCapacityJpaRepository;
 
     @MockitoBean
-    KafkaTemplate<String, String> kafkaTemplate;
-    @MockitoBean
-    KafkaAdmin kafkaAdmin;
-    @MockitoBean
     MemberClient memberClient;
     @MockitoBean
     CommissionClient commissionClient;
@@ -80,19 +80,28 @@ class ContractServiceTest {
     String adminMemberCode;
     @Autowired
     private DepositHistoryJpaRepository depositHistoryJpaRepository;
+    @Autowired
+    private DepositPendingJpaRepository depositPendingJpaRepository;
 
     @BeforeEach
     void setUp() {
+        depositPendingJpaRepository.deleteAllInBatch();
+        depositHistoryJpaRepository.deleteAllInBatch();
+        settlementJpaRepository.deleteAllInBatch();
+        contractJpaRepository.deleteAllInBatch();
+        commissionsCapacityJpaRepository.deleteAllInBatch();
+        depositJpaRepository.deleteAllInBatch();
         depositJpaRepository.save(DepositEntity.createBy(adminMemberCode));
     }
 
     @AfterEach
     void tearDown() {
-        contractJpaRepository.deleteAllInBatch();
-        depositJpaRepository.deleteAllInBatch();
-        settlementJpaRepository.deleteAllInBatch();
+        depositPendingJpaRepository.deleteAllInBatch();
         depositHistoryJpaRepository.deleteAllInBatch();
+        settlementJpaRepository.deleteAllInBatch();
+        contractJpaRepository.deleteAllInBatch();
         commissionsCapacityJpaRepository.deleteAllInBatch();
+        depositJpaRepository.deleteAllInBatch();
     }
 
     @Test
@@ -149,10 +158,20 @@ class ContractServiceTest {
 
         // then - 2개 실패 필요
         DepositEntity adminDeposit = depositJpaRepository.findByMemberCode(adminMemberCode).get();
+        DepositEntity paidUserDeposit = depositJpaRepository.findByMemberCode(userCode).get();
+        List<DepositPendingEntity> depositPendings = depositPendingJpaRepository.findAll();
+        Set<String> successContractCodes = contractPayResponse.success().stream().collect(Collectors.toSet());
 
         assertEquals(normalLimit, contractPayResponse.success().size());
         assertEquals(entireTestNum - normalLimit, contractPayResponse.fail().size());
-        assertEquals(unitAmount * normalLimit, adminDeposit.getAmount());
+        assertEquals(0L, adminDeposit.getAmount());
+        assertEquals((long) Integer.MAX_VALUE - (unitAmount * normalLimit), paidUserDeposit.getAmount());
+        assertEquals(normalLimit, depositPendings.size());
+        assertTrue(depositPendings.stream().allMatch(pending -> pending.getStatus() == DepositPendingStatus.PENDING));
+        assertTrue(depositPendings.stream().allMatch(pending -> pending.getAmount().equals(unitAmount)));
+        assertEquals(successContractCodes, depositPendings.stream()
+                .map(DepositPendingEntity::getContractCode)
+                .collect(Collectors.toSet()));
     }
 
     @Test
@@ -194,6 +213,15 @@ class ContractServiceTest {
 
         contractService.payContracts(new ContractPayServiceRequest(clientCode, contracts.stream().map(Contract::getCode).toList())); // 계약 결제 처리
 
+        List<DepositPendingEntity> paidPendings = depositPendingJpaRepository.findAll();
+        Set<String> contractCodes = contracts.stream().map(Contract::getCode).collect(Collectors.toSet());
+
+        assertEquals(contractsNum, paidPendings.size());
+        assertTrue(paidPendings.stream().allMatch(pending -> pending.getStatus() == DepositPendingStatus.PENDING));
+        assertEquals(contractCodes, paidPendings.stream()
+                .map(DepositPendingEntity::getContractCode)
+                .collect(Collectors.toSet()));
+
         // when
         List<ContractCancelRequest> requests = List.of(
                 new ContractCancelRequest(clientCode, contracts.get(0).getCode()), // 클라이언트가 취소하는 경우
@@ -206,9 +234,15 @@ class ContractServiceTest {
         DepositEntity adminDeposit = depositJpaRepository.findByMemberCode(adminMemberCode).get();
         DepositEntity clientDeposit = depositJpaRepository.findByMemberCode(clientCode).get();
         List<SettlementEntity> allSettlements = settlementJpaRepository.findAll();
+        List<DepositPendingEntity> cancelledPendings = depositPendingJpaRepository.findAll();
 
         assertEquals(0L, adminDeposit.getAmount());
         assertEquals(unitAmount * contractsNum, clientDeposit.getAmount());
+        assertEquals(contractsNum, cancelledPendings.size());
+        assertTrue(cancelledPendings.stream().allMatch(pending -> pending.getStatus() == DepositPendingStatus.CANCELLED));
+        assertEquals(contractCodes, cancelledPendings.stream()
+                .map(DepositPendingEntity::getContractCode)
+                .collect(Collectors.toSet()));
         assertEquals(0, allSettlements.size());
     }
 
@@ -230,9 +264,9 @@ class ContractServiceTest {
         ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         CountDownLatch countDownLatch = new CountDownLatch(tryCount);
 
-        List<MemberInfo> memberInfoList = List.of(new MemberInfo(clientCode, "클라이언트", MemberRole.CLIENT),
+        List<MemberInfo> memberInfoList = List.of(
+                new MemberInfo(clientCode, "클라이언트", MemberRole.CLIENT),
                 new MemberInfo(freelancerCode, "프리랜서", MemberRole.FREELANCER));
-
         when(memberClient.getMemberInfo(any()))
                 .thenReturn(new ResponseDto<>(0, HttpStatus.OK.value(), "", new MemberInfoResponse(memberInfoList)));
         when(commissionClient.getRecruitmentStatus(commissionCode))

@@ -13,6 +13,7 @@ import com.example.contractservice.contract.service.dto.request.ContractPayProce
 import com.example.contractservice.deposit.entity.DepositEntity;
 import com.example.contractservice.deposit.repository.DepositHistoryJpaRepository;
 import com.example.contractservice.deposit.repository.DepositJpaRepository;
+import com.example.contractservice.deposit.repository.DepositPendingJpaRepository;
 import com.example.contractservice.settlement.common.SettlementStatus;
 import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.entity.SettlementEntity;
@@ -39,9 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.kafka.core.KafkaAdmin;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -60,11 +58,8 @@ class ContractPaySettlementTest {
     ContractJpaRepository contractJpaRepository;
     @Autowired
     private DepositHistoryJpaRepository depositHistoryJpaRepository;
-
-    @MockitoBean
-    KafkaTemplate<String, String> kafkaTemplate;
-    @MockitoBean
-    KafkaAdmin kafkaAdmin;
+    @Autowired
+    private DepositPendingJpaRepository depositPendingJpaRepository;
 
     @Value("${admin.member.code}")
     String adminMemberCode;
@@ -75,10 +70,11 @@ class ContractPaySettlementTest {
 
     @AfterEach
     void tearDown() {
-        depositJpaRepository.deleteAllInBatch();
+        depositPendingJpaRepository.deleteAllInBatch();
         depositHistoryJpaRepository.deleteAllInBatch();
-        contractJpaRepository.deleteAllInBatch();
         settlementJpaRepository.deleteAllInBatch();
+        contractJpaRepository.deleteAllInBatch();
+        depositJpaRepository.deleteAllInBatch();
         commissionsCapacityJpaRepository.deleteAllInBatch();
     }
 
@@ -194,7 +190,7 @@ class ContractPaySettlementTest {
         System.out.println(settlementSuccessCount.get());
 
         assertEquals(initAmount - paySuccessCount.get() * paymentAmount + settlementSuccessCount.get() * settledAmount, afterUserDeposit.getAmount());
-        assertEquals(initAmount + paySuccessCount.get() * paymentAmount - settlementSuccessCount.get() * settledAmount, afterAdminDeposit.getAmount());
+        assertEquals(initAmount - settlementSuccessCount.get() * settledAmount, afterAdminDeposit.getAmount());
         assertTrue(paySuccessCount.get() > 0);
     }
 }
