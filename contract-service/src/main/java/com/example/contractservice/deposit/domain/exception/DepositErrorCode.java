@@ -7,29 +7,24 @@ public class DepositErrorCode extends DomainErrorCode {
     public static final DepositErrorCode NO_DEPOSIT_ENTITY;
     public static final DepositErrorCode NOT_ENOUGH_AMOUNT;
     public static final DepositErrorCode INVALID_AMOUNT;
-
+    public static final DepositErrorCode INVALID_PENDING_STATUS;
     public static final DepositErrorCode ALREADY_EXISTS;
-
     public static final DepositErrorCode NO_HISTORY_ENTITY;
     public static final DepositErrorCode DEPOSIT_BATCH_UPDATE_FAILED;
-
-    public static final DepositErrorCode INVALID_STATUS_FOR_COMPLETED;
+    public static final DepositErrorCode DEPOSIT_PENDING_BATCH_UPDATE_FAILED;
 
     static {
-        NO_DEPOSIT_ENTITY = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4100, "해당하는 예치금이 존재하지 않습니다.");
-        NOT_ENOUGH_AMOUNT = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4101, "예치금 잔액이 부족합니다.");
-        INVALID_AMOUNT = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4102, "처리 금액이 잘못되었습니다.");
-
+        NO_DEPOSIT_ENTITY = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4100, "해당 예치금이 존재하지 않습니다.");
+        NOT_ENOUGH_AMOUNT = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4101, "예치금의 금액이 부족합니다.");
+        INVALID_AMOUNT = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4102, "처리 금액이 올바르지 않습니다.");
+        INVALID_PENDING_STATUS = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4103, "deposit pending 상태 전이가 올바르지 않습니다.");
         ALREADY_EXISTS = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4110, "이미 존재하는 예치금입니다.");
-
-        NO_HISTORY_ENTITY = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4120, "해당하는 예치금 내역이 존재하지 않습니다.");
-
-        DEPOSIT_BATCH_UPDATE_FAILED = new DepositErrorCode(HttpStatus.INTERNAL_SERVER_ERROR, 4130, "예치금 배치 업데이트 중에 업데이트 되지 않은 데이터가 존재합니다.");
-
-        INVALID_STATUS_FOR_COMPLETED = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4140, "관리자 예치금 배치 정산을 위해서는 PENDING 상태여야만 합니다.");
+        NO_HISTORY_ENTITY = new DepositErrorCode(HttpStatus.BAD_REQUEST, 4120, "해당 예치금 내역이 존재하지 않습니다.");
+        DEPOSIT_BATCH_UPDATE_FAILED = new DepositErrorCode(HttpStatus.INTERNAL_SERVER_ERROR, 4130, "예치금 배치 업데이트 중 갱신되지 않은 데이터가 존재합니다.");
+        DEPOSIT_PENDING_BATCH_UPDATE_FAILED = new DepositErrorCode(HttpStatus.INTERNAL_SERVER_ERROR, 4131, "deposit pending 배치 업데이트 중 갱신되지 않은 데이터가 존재합니다.");
     }
 
-   private DepositErrorCode(HttpStatus httpStatusCode, int statusCode, String message) {
+    private DepositErrorCode(HttpStatus httpStatusCode, int statusCode, String message) {
         super(httpStatusCode, statusCode, message);
     }
 }

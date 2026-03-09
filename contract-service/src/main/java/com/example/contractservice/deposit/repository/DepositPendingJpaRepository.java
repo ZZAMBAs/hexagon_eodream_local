@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface DepositPendingJpaRepository extends JpaRepository<DepositPendingEntity, Long> {
 
@@ -23,9 +24,30 @@ public interface DepositPendingJpaRepository extends JpaRepository<DepositPendin
     @Query(value = """
         SELECT *
         FROM deposit_pendings dp
-        WHERE dp.status = :status AND dp.processedAt <= :endTime
-        ORDER BY dp.status, dp.processedAt
+        WHERE dp.status = :status
+          AND dp.created_at < :cutoff
+        ORDER BY dp.status, dp.created_at
         LIMIT :limit
+        FOR UPDATE SKIP LOCKED
     """, nativeQuery = true)
-    List<DepositPendingEntity> findAllByStatusOrderByProcessedAt(String status, Instant endTime, int limit);
+    List<DepositPendingEntity> findPendingBeforeWithLock(
+            @Param("status") String status,
+            @Param("cutoff") Instant cutoff,
+            @Param("limit") int limit
+    );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        UPDATE DepositPendingEntity dp
+        SET dp.status = :status,
+            dp.processedAt = :processedAt,
+            dp.updatedAt = :processedAt
+        WHERE dp.id IN :ids
+    """)
+    int updateStatusByIds(
+            @Param("ids") List<Long> ids,
+            @Param("status") DepositPendingStatus status,
+            @Param("processedAt") Instant processedAt
+    );
+
 }
