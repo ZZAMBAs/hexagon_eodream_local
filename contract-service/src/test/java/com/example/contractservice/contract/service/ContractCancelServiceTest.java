@@ -1,5 +1,6 @@
 package com.example.contractservice.contract.service;
 
+import static com.example.contractservice.contract.domain.exception.ContractErrorCode.CANCEL_NOT_AVAILABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,7 +53,7 @@ class ContractCancelServiceTest {
     private ContractCancelService contractCancelService;
 
     @Test
-    @DisplayName("PAID 계약 취소에 성공하면 deposit pending을 CANCELLED로 처리하고 회원 예치금을 환불한다")
+    @DisplayName("PAID 怨꾩빟 痍⑥냼???깃났?섎㈃ deposit pending??CANCELLED濡?泥섎━?섍퀬 ?뚯썝 ?덉튂湲덉쓣 ?섎텋?쒕떎")
     void success_process_cancel_paid_contract_when_pending_is_pending() {
         // given
         String clientCode = UUID.randomUUID().toString();
@@ -104,7 +105,7 @@ class ContractCancelServiceTest {
     }
 
     @Test
-    @DisplayName("PAID 계약의 deposit pending이 이미 COMPLETED면 취소에 실패한다")
+    @DisplayName("PAID 怨꾩빟??deposit pending???대? COMPLETED硫?痍⑥냼???ㅽ뙣?쒕떎")
     void fail_process_cancel_paid_contract_when_pending_is_completed() {
         // given
         String clientCode = UUID.randomUUID().toString();
@@ -132,8 +133,10 @@ class ContractCancelServiceTest {
         when(depositPendingService.cancelPendingByContractCode(contractCode)).thenReturn(false);
 
         // when & then
-        assertThrows(ContractException.class, () -> contractCancelService.processCancel(contract));
+        ContractException exception = assertThrows(ContractException.class,
+                () -> contractCancelService.processCancel(contract));
 
+        assertEquals(CANCEL_NOT_AVAILABLE, exception.getErrorCode());
         verify(depositPendingService).cancelPendingByContractCode(contractCode);
         verify(depositService, never()).getDepositHistoryForRefund(any(), any());
         verify(depositService, never()).transfer(any());

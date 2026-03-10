@@ -3,6 +3,7 @@ package com.example.contractservice.common.controller;
 import static com.example.contractservice.contract.common.ResponseDtoMapper.getErrorResponse;
 
 import com.example.contractservice.common.domain.exception.DomainErrorCode;
+import com.example.contractservice.common.domain.exception.DomainException;
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.deposit.domain.exception.DepositException;
 import org.hexagon.core.dto.Empty;
@@ -23,6 +24,13 @@ public class DomainExceptionHandler {
 
     @ExceptionHandler(DepositException.class)
     public ResponseEntity<ResponseDto<Empty>> handleDepositException(DepositException e) {
+        DomainErrorCode errorCode = e.getErrorCode();
+
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(getErrorResponse(errorCode));
+    }
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ResponseDto<Empty>> handleDomainException(DomainException e) {
         DomainErrorCode errorCode = e.getErrorCode();
 
         return ResponseEntity.status(errorCode.getHttpStatusCode()).body(getErrorResponse(errorCode));
