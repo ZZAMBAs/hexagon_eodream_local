@@ -5,6 +5,7 @@ import static com.example.contractservice.contract.common.ResponseDtoMapper.getE
 import com.example.contractservice.common.domain.exception.DomainErrorCode;
 import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.deposit.domain.exception.DepositException;
+import com.example.contractservice.settlement.domain.exception.SettlementException;
 import org.hexagon.core.dto.Empty;
 import org.hexagon.core.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
@@ -28,4 +29,10 @@ public class DomainExceptionHandler {
         return ResponseEntity.status(errorCode.getHttpStatusCode()).body(getErrorResponse(errorCode));
     }
 
+    @ExceptionHandler(SettlementException.class)
+    public ResponseEntity<ResponseDto<Empty>> handleSettlementException(SettlementException e) {
+        DomainErrorCode errorCode = e.getErrorCode();
+
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(getErrorResponse(errorCode));
+    }
 }

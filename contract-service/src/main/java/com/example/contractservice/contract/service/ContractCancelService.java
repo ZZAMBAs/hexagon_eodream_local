@@ -8,12 +8,12 @@ import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.repository.ContractRepository;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
 import com.example.contractservice.deposit.controller.dto.response.DepositHistoryInfo;
+import com.example.contractservice.deposit.service.DepositPendingService;
 import com.example.contractservice.deposit.service.DepositService;
 import com.example.contractservice.deposit.service.dto.request.DepositProcessRequest;
 import com.example.contractservice.settlement.service.SettlementService;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.events.contract.CommissionOpenCloseEvent;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ContractCancelService {
 
+    private static final String REFUND_COMMENT = "환불 처리";
+
     private final DepositService depositService;
+    private final DepositPendingService depositPendingService;
     private final SettlementService settlementService;
     private final ContractRepository contractRepository;
     private final CommissionsCapacityService commissionsCapacityService;
     private final ApplicationEventPublisher applicationEventPublisher;
-
-    @Value("${admin.member.code}")
-    private String adminMemberCode;
 
     @Transactional
     public void processCancel(Contract contract) {
@@ -50,9 +50,18 @@ public class ContractCancelService {
     }
 
     private void rollbackPaidContract(Contract contract) {
-        publishEventIfCommissionFull(contract); // 의뢰글 마감 상태였다면 의뢰글 오픈 이벤트 발행
-        refund(contract); // 환불
-        removeSettlements(contract); // 정산 데이터 제거
+        cancelPending(contract);
+        publishEventIfCommissionFull(contract);
+        refund(contract);
+        deleteCancelableSettlements(contract);
+    }
+
+    private void cancelPending(Contract contract) {
+        boolean isCancelled = depositPendingService.cancelPendingByContractCode(contract.getCode());
+
+        if (!isCancelled) {
+            throw new ContractException(CANCEL_NOT_AVAILABLE);
+        }
     }
 
     private void publishEventIfCommissionFull(Contract contract) {
@@ -64,29 +73,24 @@ public class ContractCancelService {
         }
     }
 
-    /** 관리자 예치금 withdraw 이후 해당 유저 예치금으로 transfer
+    /** 결제한 유저 예치금으로 transfer
      *
      * @param contract 환불을 진행할 계약
      */
     private void refund(Contract contract) {
         DepositHistoryInfo historyInfo = depositService.getDepositHistoryForRefund(
                 contract.getInfo().clientCode(), contract.getCode());
-        DepositProcessRequest adminWithdrawRequest = new DepositProcessRequest(adminMemberCode, contract.getCode(),
-                Math.abs(historyInfo.changeAmount()), "환불 처리");
+        DepositProcessRequest memberTransferRequest = new DepositProcessRequest(
+                contract.getInfo().clientCode(),
+                contract.getCode(),
+                Math.abs(historyInfo.changeAmount()),
+                REFUND_COMMENT
+        );
 
-        depositService.withdraw(adminWithdrawRequest);
-
-        DepositProcessRequest memberTransferRequest = new DepositProcessRequest(contract.getInfo().clientCode(), contract.getCode(),
-                Math.abs(historyInfo.changeAmount()), "환불 처리");
         depositService.transfer(memberTransferRequest);
     }
 
-    /** 해당 계약과 관련된 모든 정산 데이터를 하드 딜리트합니다.
-     *
-     * @param contract 정산 데이터를 지울 관련 계약
-     */
-    private void removeSettlements(Contract contract) {
-        settlementService.deleteAllRelatedWith(contract);
+    private void deleteCancelableSettlements(Contract contract) {
+        settlementService.deleteCancelableSettlements(contract);
     }
-
 }

@@ -22,7 +22,7 @@ public class DepositBatchRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public void updateAllDeposits(Map<String, Deposit> memberDepositMap) { // now() 쓰면 데이터베이스 기준 시간대 시간이 들어감
+    public void updateAllDeposits(Map<String, Deposit> memberDepositMap) {
         String sql = """
                 UPDATE deposits
                 SET amount = ?, updated_at = ?
@@ -32,10 +32,10 @@ public class DepositBatchRepository {
         Instant batchTime = Instant.now();
 
         List<Object[]> args = memberDepositMap.values().stream()
-                .map(deposit -> new Object[]{deposit.getAmount(), batchTime, deposit.getCode(), deposit.getUpdatedAt()}).toList();
+                .map(deposit -> new Object[]{deposit.getAmount(), batchTime, deposit.getCode(), deposit.getUpdatedAt()})
+                .toList();
 
         int[] updatedCounts = jdbcTemplate.batchUpdate(sql, args);
-
         boolean allDepositUpdated = Arrays.stream(updatedCounts).allMatch(i -> i == EXPECTED_UPDATED_NUM);
 
         if (!allDepositUpdated) {
@@ -62,5 +62,4 @@ public class DepositBatchRepository {
 
         jdbcTemplate.batchUpdate(sql, args);
     }
-
 }

@@ -1,11 +1,15 @@
 package com.example.contractservice.settlement.repository;
 
-import static com.example.contractservice.settlement.service.mapper.SettlementMapper.*;
+import static com.example.contractservice.settlement.domain.exception.SettlementErrorCode.SETTLEMENT_ALREADY_PROCESSED;
+import static com.example.contractservice.settlement.domain.exception.SettlementErrorCode.SETTLEMENT_NOT_EXISTS;
+import static com.example.contractservice.settlement.service.mapper.SettlementMapper.applyToEntity;
+import static com.example.contractservice.settlement.service.mapper.SettlementMapper.toDomain;
+import static com.example.contractservice.settlement.service.mapper.SettlementMapper.toEntity;
 
+import com.example.contractservice.settlement.common.SettlementStatus;
 import com.example.contractservice.settlement.domain.Settlement;
+import com.example.contractservice.settlement.domain.exception.SettlementException;
 import com.example.contractservice.settlement.entity.SettlementEntity;
-import com.example.contractservice.settlement.service.mapper.SettlementMapper;
-import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -30,15 +34,19 @@ public class SettlementRepository {
         return toDomain(settlementJpaRepository.save(settlementEntity));
     }
 
-    public void saveAll(List<Settlement> settlements) {
-        List<SettlementEntity> settlementEntities = settlements.stream()
-                .map(SettlementMapper::toEntity)
-                .toList();
+    public void deleteCancelableSettlementsByContractCode(String contractCode) {
+        int deletedCount = settlementJpaRepository.deleteCancelableByContractCode(contractCode, SettlementStatus.DONE.name());
 
-        settlementJpaRepository.saveAll(settlementEntities);
-    }
+        if (deletedCount > 0) { // 정상적으로 삭제
+            return;
+        }
 
-    public void hardDeleteAllBy(String contractCode) {
-        settlementJpaRepository.deleteByContractCode(contractCode);
+        // 이미 정산 처리 되었는지 최종 확인 (모종의 이유로 정산 데이터가 없었을 수도 있기 때문)
+        if (settlementJpaRepository.existsByContractCodeAndStatus(contractCode, SettlementStatus.DONE)) {
+            throw new SettlementException(SETTLEMENT_ALREADY_PROCESSED);
+        }
+
+        // 정상적이지 않은 흐름(정산 데이터 없음)
+        throw new SettlementException(SETTLEMENT_NOT_EXISTS);
     }
 }

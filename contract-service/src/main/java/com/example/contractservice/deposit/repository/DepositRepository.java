@@ -31,6 +31,11 @@ public class DepositRepository {
                 .orElseThrow(() -> new DepositException(NO_DEPOSIT_ENTITY)));
     }
 
+    public Deposit findDepositByMemberCodeForUpdate(String memberCode) {
+        return DepositMapper.toDomain(depositJpaRepository.findByMemberCodeForUpdate(memberCode)
+                .orElseThrow(() -> new DepositException(NO_DEPOSIT_ENTITY)));
+    }
+
     public Deposit saveDeposit(Deposit deposit) {
         Optional<DepositEntity> optionalEntity = depositJpaRepository.findByMemberCode(deposit.getMemberCode());
 
