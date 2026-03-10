@@ -53,9 +53,8 @@ class ContractCancelServiceTest {
     private ContractCancelService contractCancelService;
 
     @Test
-    @DisplayName("PAID 怨꾩빟 痍⑥냼???깃났?섎㈃ deposit pending??CANCELLED濡?泥섎━?섍퀬 ?뚯썝 ?덉튂湲덉쓣 ?섎텋?쒕떎")
+    @DisplayName("PAID 계약 취소에 성공하면 deposit pending을 CANCELLED로 처리하고 회원 예치금을 환불한다")
     void success_process_cancel_paid_contract_when_pending_is_pending() {
-        // given
         String clientCode = UUID.randomUUID().toString();
         String freelancerCode = UUID.randomUUID().toString();
         String contractCode = UUID.randomUUID().toString();
@@ -85,10 +84,8 @@ class ContractCancelServiceTest {
         when(depositService.getDepositHistoryForRefund(clientCode, contractCode))
                 .thenReturn(new DepositHistoryInfo(Instant.now(), -amount, 700_000L, "payment"));
 
-        // when
         contractCancelService.processCancel(contract);
 
-        // then
         ArgumentCaptor<DepositProcessRequest> refundCaptor = ArgumentCaptor.forClass(DepositProcessRequest.class);
 
         verify(depositPendingService).cancelPendingByContractCode(contractCode);
@@ -105,9 +102,8 @@ class ContractCancelServiceTest {
     }
 
     @Test
-    @DisplayName("PAID 怨꾩빟??deposit pending???대? COMPLETED硫?痍⑥냼???ㅽ뙣?쒕떎")
+    @DisplayName("PAID 계약의 deposit pending이 이미 COMPLETED면 취소에 실패한다")
     void fail_process_cancel_paid_contract_when_pending_is_completed() {
-        // given
         String clientCode = UUID.randomUUID().toString();
         String freelancerCode = UUID.randomUUID().toString();
         String contractCode = UUID.randomUUID().toString();
@@ -132,7 +128,6 @@ class ContractCancelServiceTest {
 
         when(depositPendingService.cancelPendingByContractCode(contractCode)).thenReturn(false);
 
-        // when & then
         ContractException exception = assertThrows(ContractException.class,
                 () -> contractCancelService.processCancel(contract));
 
