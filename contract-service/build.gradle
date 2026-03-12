@@ -60,6 +60,9 @@ dependencies {
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // Caffeine 캐시
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
     // MySQL
     implementation 'com.mysql:mysql-connector-j'
 
@@ -71,6 +74,9 @@ dependencies {
 
     // Feign Client
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // Slack Client API
+    implementation 'com.slack.api:slack-api-client:1.47.0'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
