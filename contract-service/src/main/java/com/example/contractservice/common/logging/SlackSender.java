@@ -3,20 +3,16 @@ package com.example.contractservice.common.logging;
 import com.example.contractservice.common.logging.dto.SlackErrorInfo;
 import com.example.contractservice.common.util.StringUtil;
 import com.slack.api.SlackConfig;
-import com.slack.api.model.Attachment;
-import com.slack.api.model.Field;
 import com.slack.api.util.json.GsonFactory;
 import com.slack.api.webhook.Payload;
 import java.time.Duration;
-import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 public class SlackSender {
-    private static final String COLOR = "#ff0000";
-    private static final String EXCEPTION_TITLE = "예외 발생";
-    private static final String ROOT_CAUSE_FORMAT = "root cause: {}";
+    private static final String EXCEPTION_TITLE = "에러 발생";
+    private static final String ALERT_TEXT = "에러가 발생했습니다! 빠른 처리가 필요합니다!";
 
     private final String webhookUrl;
     private final RestClient restClient;
@@ -47,25 +43,9 @@ public class SlackSender {
         }
     }
 
-    private static String getPayload(SlackErrorInfo info) {
-        List<Field> fields = List.of(
-                Field.builder()
-                        .title(resolveTitle(info))
-                        .value(StringUtil.format("발생 클래스: {} \n예외: {}\n{}",
-                                info.loggingClass(),
-                                info.exceptionSummary(),
-                                StringUtil.format(ROOT_CAUSE_FORMAT, info.rootCause())))
-                        .build()
-        );
-        List<Attachment> attachments = List.of(
-                Attachment.builder()
-                        .color(COLOR)
-                        .fields(fields)
-                        .build()
-        );
+    private String getPayload(SlackErrorInfo info) {
         Payload payload = Payload.builder()
-                .text("에러가 발생했습니다! 빠른 처리가 필요합니다!")
-                .attachments(attachments)
+                .text(buildText(info))
                 .build();
 
         return GsonFactory
@@ -83,5 +63,16 @@ public class SlackSender {
 
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private String buildText(SlackErrorInfo info) {
+        StringBuilder sb = new StringBuilder()
+                .append(ALERT_TEXT).append("\n\n")
+                .append("*:red_circle:").append(resolveTitle(info)).append("*\n")
+                .append(StringUtil.format("발생 클래스: {}", info.loggingClass())).append("\n")
+                .append(StringUtil.format("예외: {}", info.exceptionSummary())).append("\n")
+                .append(StringUtil.format("root cause: {}", info.rootCause()));
+
+        return sb.toString();
     }
 }
