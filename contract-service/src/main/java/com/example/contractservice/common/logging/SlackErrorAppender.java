@@ -38,11 +38,8 @@ public class SlackErrorAppender extends AppenderBase<ILoggingEvent> {
         String rootCauseClass = getRootCauseClass(throwableProxy);
         String key = assembleDedupKey(mdcMap, event, rootCauseClass);
 
-        synchronized (this) {
-            if (errorDeduplicator.isDuplicate(key))
-                return;
-            errorDeduplicator.add(key);
-        }
+        if (!errorDeduplicator.acquire(key))
+            return;
 
         SlackErrorInfo dataForSlack = createDataForSlack(mdcMap, event, throwableProxy, rootCauseClass);
 

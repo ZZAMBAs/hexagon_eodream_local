@@ -5,7 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 
 public class CaffeineErrorDeduplicator implements SlackErrorDeduplicator {
-    private Cache<String, Boolean> cache;
+    private final Cache<String, Boolean> cache;
 
     public CaffeineErrorDeduplicator(int ttlMillis) {
         cache = Caffeine.newBuilder()
@@ -14,13 +14,8 @@ public class CaffeineErrorDeduplicator implements SlackErrorDeduplicator {
     }
 
     @Override
-    public void add(String key) {
-        cache.put(key, true);
-    }
-
-    @Override
-    public boolean isDuplicate(String key) {
-        return cache.getIfPresent(key) != null;
+    public boolean acquire(String key) {
+        return cache.asMap().putIfAbsent(key, Boolean.TRUE) == null;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.example.contractservice.common.logging;
 
 public interface SlackErrorDeduplicator {
-    void add(String key);
-    boolean isDuplicate(String key);
+    boolean acquire(String key);
     void remove(String key);
 }
