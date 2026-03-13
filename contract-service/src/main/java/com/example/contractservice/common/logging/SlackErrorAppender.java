@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class SlackErrorAppender extends AppenderBase<ILoggingEvent> {
     private static final String NO_VAL = "none";
+    private static final String NO_THROWABLE = "NO_THROWABLE";
     private static final int LIMIT = 3;
 
     private String webhookUrl;
@@ -33,7 +34,9 @@ public class SlackErrorAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent event) {
         Map<String, String> mdcMap = event.getMDCPropertyMap();
-        String key = assembleVal(mdcMap, event);
+        IThrowableProxy throwableProxy = event.getThrowableProxy();
+        String rootCauseClass = getRootCauseClass(throwableProxy);
+        String key = assembleDedupKey(mdcMap, event, rootCauseClass);
 
         synchronized (this) {
             if (errorDeduplicator.isDuplicate(key))
@@ -41,7 +44,7 @@ public class SlackErrorAppender extends AppenderBase<ILoggingEvent> {
             errorDeduplicator.add(key);
         }
 
-        SlackErrorInfo dataForSlack = createDataForSlack(mdcMap, event);
+        SlackErrorInfo dataForSlack = createDataForSlack(mdcMap, event, throwableProxy, rootCauseClass);
 
         try {
             slackSender.send(dataForSlack);
@@ -50,22 +53,24 @@ public class SlackErrorAppender extends AppenderBase<ILoggingEvent> {
         }
     }
 
-    // method + path + callerName + ExceptionName
-    private String assembleVal(Map<String, String> mdcMap, ILoggingEvent event) {
-        return StringUtil.format("{}:{}:{}:{}",
-                mdcMap.getOrDefault("httpMethod", NO_VAL),
-                mdcMap.getOrDefault("httpPath", NO_VAL),
-                event.getLoggerName(),
-                event.getThrowableProxy().getClassName()
+    private String assembleDedupKey(Map<String, String> mdcMap, ILoggingEvent event, String rootCauseClass) {
+        return StringUtil.format("method={}||path={}||logger={}||rootCause={}||msg={}",
+                getNormalizedValue(mdcMap.get("httpMethod")),
+                getNormalizedValue(mdcMap.get("httpPath")),
+                getNormalizedValue(event.getLoggerName()),
+                getNormalizedValue(rootCauseClass),
+                getNormalizedValue(event.getMessage())
         );
     }
 
-    private SlackErrorInfo createDataForSlack(Map<String, String> mdcMap, ILoggingEvent event) {
+    private SlackErrorInfo createDataForSlack(Map<String, String> mdcMap, ILoggingEvent event,
+                                              IThrowableProxy throwableProxy, String rootCauseClass) {
         return new SlackErrorInfo(
-                mdcMap.getOrDefault("httpMethod", NO_VAL),
-                mdcMap.getOrDefault("httpPath", NO_VAL),
+                mdcMap.get("httpMethod"),
+                mdcMap.get("httpPath"),
                 event.getLoggerName(),
-                getBriefException(event.getThrowableProxy())
+                throwableProxy == null ? getNormalizedValue(event.getFormattedMessage()) : getBriefException(throwableProxy),
+                throwableProxy == null ? NO_VAL : buildRootCauseSummary(throwableProxy, rootCauseClass)
         );
     }
 
@@ -85,6 +90,38 @@ public class SlackErrorAppender extends AppenderBase<ILoggingEvent> {
         }
 
         return sb.toString();
+    }
+
+    private String buildRootCauseSummary(IThrowableProxy proxy, String rootCauseClass) {
+        IThrowableProxy rootCause = getRootCauseProxy(proxy);
+        return StringUtil.format("{}: {}", rootCauseClass, getNormalizedValue(rootCause.getMessage()));
+    }
+
+    private String getRootCauseClass(IThrowableProxy proxy) {
+        if (proxy == null)
+            return NO_THROWABLE;
+
+        return getRootCauseProxy(proxy).getClassName();
+    }
+
+    private IThrowableProxy getRootCauseProxy(IThrowableProxy proxy) {
+        IThrowableProxy current = proxy;
+
+        while (current.getCause() != null) {
+            current = current.getCause();
+        }
+
+        return current;
+    }
+
+    private String getNormalizedValue(String value) {
+        if (value == null || value.isBlank())
+            return NO_VAL;
+
+        return value
+                .replace("\r", " ")
+                .replace("\n", " ")
+                .trim();
     }
 
     // setter

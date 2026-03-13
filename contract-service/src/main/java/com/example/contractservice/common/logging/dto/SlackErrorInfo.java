@@ -4,7 +4,8 @@ public record SlackErrorInfo(
         String httpMethod,
         String httpPath,
         String loggingClass,
-        String exception
+        String exceptionSummary,
+        String rootCause
 ) {
 
 }
