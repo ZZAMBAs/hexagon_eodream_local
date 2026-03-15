@@ -114,9 +114,9 @@ admin:
 
 logging:
   slack:
-    webhook-url: ${SLACK_WEBHOOK_URL}
     deduplication:
       ttl: 1800000
     sender:
       read-timeout: 2000
       connection-timeout: 1000
+      webhook-url: ${SLACK_WEBHOOK_URL}
