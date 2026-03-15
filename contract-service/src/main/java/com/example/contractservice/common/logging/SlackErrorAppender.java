@@ -22,7 +22,7 @@ public class SlackErrorAppender extends AppenderBase<ILoggingEvent> {
 
     @Override
     public void start() {
-        if (ttlMillis <= 0 || connectionTimeoutMillis <= 0 || readTimeoutMillis <= 0)
+        if (ttlMillis <= 0 || connectionTimeoutMillis <= 0 || readTimeoutMillis <= 0 || webhookUrl == null || webhookUrl.isBlank())
             return;
 
         super.start();
