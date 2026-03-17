@@ -47,7 +47,7 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>ERROR</level>
         </filter>
-        <neverBlock>false</neverBlock>
+        <neverBlock>true</neverBlock>
         <maxFlushTime>30000</maxFlushTime>
         <appender-ref ref="SLACK_ERROR_ALERT" />
     </appender>
