@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="contract-service"/>
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="./logs"/>
+    <springProperty scope="context" name="ROOT_LOG_LEVEL" source="logging.level.root" defaultValue="INFO"/>
+
+    <springProperty scope="context" name="SLACK_WEBHOOK_URL" source="logging.slack.sender.webhook-url"/>
+    <springProperty scope="context" name="SLACK_ERROR_TTL" source="logging.slack.deduplication.ttl" defaultValue="1800000"/>
+    <springProperty scope="context" name="SLACK_READ_TIMEOUT" source="logging.slack.sender.read-timeout" defaultValue="2000"/>
+    <springProperty scope="context" name="SLACK_CONNECTION_TIMEOUT" source="logging.slack.sender.connection-timeout" defaultValue="1000"/>
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="FILE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="SLACK_ERROR_ALERT" class="com.example.contractservice.common.logging.SlackErrorAppender">
+        <ttlMillis>${SLACK_ERROR_TTL}</ttlMillis>
+        <connectionTimeoutMillis>${SLACK_CONNECTION_TIMEOUT}</connectionTimeoutMillis>
+        <readTimeoutMillis>${SLACK_READ_TIMEOUT}</readTimeoutMillis>
+        <webhookUrl>${SLACK_WEBHOOK_URL}</webhookUrl>
+    </appender>
+
+    <appender name="ASYNC_SLACK" class="ch.qos.logback.classic.AsyncAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <neverBlock>true</neverBlock>
+        <maxFlushTime>30000</maxFlushTime>
+        <appender-ref ref="SLACK_ERROR_ALERT" />
+    </appender>
+
+    <root level="${ROOT_LOG_LEVEL}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLING_FILE"/>
+        <appender-ref ref="ASYNC_SLACK" />
+    </root>
+
+</configuration>

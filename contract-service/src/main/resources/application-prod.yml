@@ -4,10 +4,9 @@ server:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: http://${DISCOVERY_HOST}:8761/eureka/
   instance:
     instance-id: "${spring.application.name}:${server.port}:${random.uuid}"
-    hostname: hexagon-contract-service
 spring:
   application:
     name: contract-service
@@ -26,7 +25,7 @@ spring:
 
   datasource:
     # TODO: 프로젝트 환경에 맞게 DB URL, Username, Password 수정 필요!!
-    url: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?rewriteBatchedStatements=true&connectionTimeout=3000&socketTimeout=10000
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}?rewriteBatchedStatements=true&connectionTimeout=3000&socketTimeout=10000
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
@@ -39,7 +38,7 @@ spring:
 
   kafka:
     bootstrap-servers:
-      - kafka:9092
+      - ${KAFKA_HOST}:9092
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -96,6 +95,9 @@ module:
         member-info: /internal/members
 
 batch:
+  deposit-pending:
+    size: 500
+    interval: 0 0 0 * * ?
   settlement:
     size: 500
     settlement-rate: 0.125
@@ -109,3 +111,12 @@ admin:
     code: ${ADMIN_MEMBER_CODE} # 수정 가능
   deposit:
     code: ${ADMIN_DEPOSIT_CODE} # 수정 가능
+
+logging:
+  slack:
+    deduplication:
+      ttl: 1800000
+    sender:
+      read-timeout: 2000
+      connection-timeout: 1000
+      webhook-url: ${SLACK_WEBHOOK_URL}
