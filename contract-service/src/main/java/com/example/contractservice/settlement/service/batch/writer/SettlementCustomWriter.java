@@ -73,12 +73,12 @@ public class SettlementCustomWriter implements ItemWriter<Settlement> {
     }
 
     private Deposit getReceiverDeposit(String receiverCode, Map<String, Deposit> memberDepositMap) {
-        memberDepositMap.computeIfAbsent(receiverCode, depositRepository::findDepositByMemberCode);
+        memberDepositMap.computeIfAbsent(receiverCode, depositRepository::findDepositByMemberCodeForUpdate);
 
         return memberDepositMap.get(receiverCode);
     }
 
     private void putAdminDeposit(Map<String, Deposit> memberDepositMap) {
-        memberDepositMap.put(adminMemberCode, depositRepository.findDepositByMemberCode(adminMemberCode));
+        memberDepositMap.put(adminMemberCode, depositRepository.findDepositByMemberCodeForUpdate(adminMemberCode));
     }
 }
