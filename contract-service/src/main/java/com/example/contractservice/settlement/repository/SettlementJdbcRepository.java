@@ -22,7 +22,7 @@ public class SettlementJdbcRepository {
         String sql = """
                 UPDATE settlements
                 SET settlement_rate = ?, settled_amount = ?, settled_at = ?, status = ?
-                WHERE id = ?
+                WHERE id = ? AND status = 'BEFORE'
                 """;
 
         List<Object[]> args = settlements.stream().map(settlement -> new Object[]{

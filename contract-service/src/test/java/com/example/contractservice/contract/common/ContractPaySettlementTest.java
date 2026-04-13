@@ -40,6 +40,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -60,6 +63,11 @@ class ContractPaySettlementTest {
     private DepositHistoryJpaRepository depositHistoryJpaRepository;
     @Autowired
     private DepositPendingJpaRepository depositPendingJpaRepository;
+
+    @MockitoBean
+    KafkaTemplate<String, String> kafkaTemplate;
+    @MockitoBean
+    KafkaAdmin kafkaAdmin;
 
     @Value("${admin.member.code}")
     String adminMemberCode;

@@ -1,9 +1,6 @@
 package com.example.contractservice.deposit.domain;
 
-import static com.example.contractservice.deposit.domain.exception.DepositErrorCode.INVALID_PENDING_STATUS;
-
 import com.example.contractservice.deposit.common.DepositPendingStatus;
-import com.example.contractservice.deposit.domain.exception.DepositException;
 import com.example.contractservice.deposit.domain.vo.DepositPendingDetails;
 import java.time.Instant;
 
