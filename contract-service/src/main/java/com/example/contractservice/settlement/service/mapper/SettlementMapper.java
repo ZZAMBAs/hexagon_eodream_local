@@ -27,7 +27,7 @@ public abstract class SettlementMapper {
                 settlementEntity.getSettlementRate());
 
         SettlementTimeline timeline = new SettlementTimeline(settlementEntity.getCreatedAt(),
-                settlementEntity.getSettledAt(), settlementEntity.getProgressingAt());
+                settlementEntity.getSettledAt(), settlementEntity.getProgressingAt(), settlementEntity.getFailedAt());
 
         return new Settlement(settlementEntity.getId(), settlementEntity.getCode(), reference, statusInfo, timeline);
     }

@@ -21,7 +21,7 @@ public class SettlementJdbcRepository {
     public void updateAllInBatch(List<Settlement> settlements) {
         String sql = """
                 UPDATE settlements
-                SET settlement_rate = ?, settled_amount = ?, settled_at = ?, status = ?
+                SET settlement_rate = ?, settled_amount = ?, settled_at = ?, status = ?, failed_at = ?
                 WHERE id = ? AND status = 'BEFORE'
                 """;
 
@@ -30,6 +30,7 @@ public class SettlementJdbcRepository {
                 settlement.getSettlementStatusInfo().settledAmount(),
                 settlement.getSettlementTimeline().settledAt(),
                 settlement.getSettlementStatusInfo().status().name(),
+                settlement.getSettlementTimeline().failedAt(),
                 settlement.getId()
         }).toList();
 

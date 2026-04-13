@@ -2,12 +2,12 @@ package com.example.contractservice.settlement.domain;
 
 import static com.example.contractservice.settlement.domain.exception.SettlementErrorCode.FEE_NOT_CALCULATED;
 
+import com.example.contractservice.settlement.common.SettlementStatus;
 import com.example.contractservice.settlement.domain.exception.SettlementException;
 import com.example.contractservice.settlement.domain.vo.SettlementReference;
 import com.example.contractservice.settlement.domain.vo.SettlementStatusInfo;
 import com.example.contractservice.settlement.domain.vo.SettlementTimeline;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.UUID;
 
 public class Settlement {
@@ -29,9 +29,8 @@ public class Settlement {
         this.settlementTimeline = settlementTimeline;
     }
 
-    public void settle(BigDecimal settlementRate) {
-        this.settlementStatusInfo = settlementStatusInfo.settle(settlementRate);
-        this.settlementTimeline = settlementTimeline.updateSettledAt(Instant.now());
+    public Settlement settle(BigDecimal settlementRate) {
+        return new Settlement(id, code, settlementReference, settlementStatusInfo.settle(settlementRate), settlementTimeline.settle());
     }
 
     public Long getFee() {
@@ -43,7 +42,15 @@ public class Settlement {
     }
 
     public Settlement fail() {
-        return new Settlement(id, code, settlementReference, settlementStatusInfo, settlementTimeline.updateFailedAt(Instant.now()));
+        return new Settlement(id, code, settlementReference, settlementStatusInfo.fail(), settlementTimeline.fail());
+    }
+
+    public boolean isValid() {
+        return !hasNull() && !isTimelineInvalid() && !isInfoInvalid() && !isReferenceInvalid();
+    }
+
+    public boolean isFailed() {
+        return settlementStatusInfo.status() == SettlementStatus.FAILED;
     }
 
     public Long getId() {
@@ -68,5 +75,28 @@ public class Settlement {
 
     private String generateCode() {
         return UUID.randomUUID().toString();
+    }
+
+    private boolean hasNull() {
+        return settlementReference == null || settlementStatusInfo == null || settlementTimeline == null;
+    }
+
+    private boolean isTimelineInvalid() {
+        return settlementTimeline.progressingAt() == null
+                || settlementTimeline.failedAt() != null
+                || settlementTimeline.settledAt() != null;
+    }
+
+    private boolean isInfoInvalid() {
+        Long originalAmount = settlementStatusInfo.originalAmount();
+        SettlementStatus status = settlementStatusInfo.status();
+
+        return originalAmount == null || originalAmount < 0
+                || status != SettlementStatus.BEFORE
+                || settlementStatusInfo.settledAmount() != null;
+    }
+
+    private boolean isReferenceInvalid() {
+        return settlementReference.contractCode() == null || settlementReference.receiverCode() == null;
     }
 }

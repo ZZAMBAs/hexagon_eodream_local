@@ -8,7 +8,6 @@ import com.example.contractservice.deposit.repository.DepositRepository;
 import com.example.contractservice.deposit.repository.batch.DepositBatchRepository;
 import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.repository.batch.SettlementBatchRepository;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,8 +31,6 @@ public class SettlementCustomWriter implements ItemWriter<Settlement> {
     private final DepositRepository depositRepository;
     private final DepositBatchRepository depositBatchRepository;
 
-    @Value("${batch.settlement.settlement-rate}")
-    private BigDecimal settlementRate;
     @Value("${admin.member.code}")
     private String adminMemberCode;
 
@@ -48,7 +45,9 @@ public class SettlementCustomWriter implements ItemWriter<Settlement> {
         Deposit adminDeposit = memberDepositMap.get(adminMemberCode);
 
         for (Settlement settlement : settlements) {
-            settlement.settle(settlementRate);
+            if (settlement.isFailed()) {
+                continue;
+            }
 
             String receiverCode = settlement.getSettlementReference().receiverCode();
             Deposit receiverDeposit = getReceiverDeposit(receiverCode, memberDepositMap);

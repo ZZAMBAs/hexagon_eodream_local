@@ -17,11 +17,11 @@ public record SettlementTimeline(
         this((createdAt == null) ? Instant.now() : createdAt, settledAt, progressingAt, null);
     }
 
-    public SettlementTimeline updateSettledAt(Instant curSettledAt) {
-        return new SettlementTimeline(createdAt, curSettledAt, progressingAt);
+    public SettlementTimeline settle() {
+        return new SettlementTimeline(createdAt, Instant.now(), progressingAt);
     }
 
-    public SettlementTimeline updateFailedAt(Instant curFailedAt) {
-        return new SettlementTimeline(createdAt, settledAt, progressingAt, curFailedAt);
+    public SettlementTimeline fail() {
+        return new SettlementTimeline(createdAt, settledAt, progressingAt, Instant.now());
     }
 }
