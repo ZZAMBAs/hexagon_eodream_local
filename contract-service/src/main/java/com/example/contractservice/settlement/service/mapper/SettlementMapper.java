@@ -61,11 +61,13 @@ public abstract class SettlementMapper {
 
     public static void applyToEntity(Settlement settlement, SettlementEntity settlementEntity) {
         SettlementStatusInfo statusInfo = settlement.getSettlementStatusInfo();
+        SettlementTimeline timeline = settlement.getSettlementTimeline();
 
         settlementEntity.updateInfo(statusInfo.settledAmount(),
                 statusInfo.settlementRate(),
-                settlement.getSettlementTimeline().settledAt(),
-                statusInfo.status());
+                timeline.settledAt(),
+                statusInfo.status(),
+                timeline.failedAt());
     }
 
     /** 단 건 타입인 경우, 프로젝트 종료일에 처리되는 정산 데이터가 생성됩니다.

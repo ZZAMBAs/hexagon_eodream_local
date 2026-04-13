@@ -54,6 +54,9 @@ public class SettlementEntity {
     @Column(name = "settled_at")
     private Instant settledAt;
 
+    @Column(name = "failed_at")
+    private Instant failedAt;
+
     @Column(name = "settlement_rate", precision = 5, scale = 2)
     private BigDecimal settlementRate;
 
@@ -70,10 +73,11 @@ public class SettlementEntity {
         this.createdAt = createdAt;
     }
 
-    public void updateInfo(Long settledAmount, BigDecimal settlementRate, Instant settledAt, SettlementStatus status) {
+    public void updateInfo(Long settledAmount, BigDecimal settlementRate, Instant settledAt, SettlementStatus status, Instant failedAt) {
         this.settledAmount = settledAmount;
         this.settlementRate = settlementRate;
         this.settledAt = settledAt;
         this.status = status;
+        this.failedAt = failedAt;
     }
 }

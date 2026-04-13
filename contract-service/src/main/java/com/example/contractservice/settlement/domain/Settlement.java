@@ -34,6 +34,18 @@ public class Settlement {
         this.settlementTimeline = settlementTimeline.updateSettledAt(Instant.now());
     }
 
+    public Long getFee() {
+        if (settlementStatusInfo.settledAmount() == null) {
+            throw new SettlementException(FEE_NOT_CALCULATED);
+        }
+
+        return settlementStatusInfo.originalAmount() - settlementStatusInfo.settledAmount();
+    }
+
+    public Settlement fail() {
+        return new Settlement(id, code, settlementReference, settlementStatusInfo, settlementTimeline.updateFailedAt(Instant.now()));
+    }
+
     public Long getId() {
         return id;
     }
@@ -56,13 +68,5 @@ public class Settlement {
 
     private String generateCode() {
         return UUID.randomUUID().toString();
-    }
-
-    public Long getFee() {
-        if (settlementStatusInfo.settledAmount() == null) {
-            throw new SettlementException(FEE_NOT_CALCULATED);
-        }
-
-        return settlementStatusInfo.originalAmount() - settlementStatusInfo.settledAmount();
     }
 }
