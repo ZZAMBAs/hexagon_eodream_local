@@ -1,23 +1,32 @@
 package com.example.contractservice.settlement.common.config;
 
-import com.example.contractservice.deposit.domain.exception.DepositException;
+import com.example.contractservice.common.util.StringUtil;
 import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.entity.SettlementEntity;
 import com.example.contractservice.settlement.service.batch.processor.SettlementDataProcessor;
 import com.example.contractservice.settlement.service.batch.reader.SettlementZeroOffsetItemReader;
 import com.example.contractservice.settlement.service.batch.writer.SettlementCustomWriter;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.transaction.PlatformTransactionManager;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class SettlementStepConfig {
@@ -40,11 +49,11 @@ public class SettlementStepConfig {
                 .processor(settlementDataProcessor)
                 .writer(settlementCustomWriter)
                 .faultTolerant()
-                .retry(DepositException.class)
                 .retry(OptimisticLockingFailureException.class)
+                .retry(DataAccessException.class)
                 .retryLimit(RETRY_LIMIT)
                 .backOffPolicy(backOffPolicy())
-                // .listener() // TODO: 재시도 실패 후 리스너 추가. FAILED에 대한 로깅 처리 필요(FAILED는 정산하지 않음)
+                .listener(settlementStepExecutionListener())
                 .build();
     }
 
@@ -56,6 +65,29 @@ public class SettlementStepConfig {
         policy.setMaxInterval(10000L);
 
         return policy;
+    }
+
+    @Bean
+    public StepExecutionListener settlementStepExecutionListener() {
+        return new StepExecutionListener() {
+            @Override
+            public void beforeStep(StepExecution stepExecution) {
+                StepExecutionListener.super.beforeStep(stepExecution);
+            }
+
+            @Override
+            public @Nullable ExitStatus afterStep(StepExecution stepExecution) {
+                if (stepExecution.getStatus().isUnsuccessful()) {
+                    List<Throwable> failureExceptions = stepExecution.getFailureExceptions();
+                    String exceptionSummary = failureExceptions.stream().map(Throwable::toString).collect(Collectors.joining(", "));
+
+                    log.error(StringUtil.format("정산 배치 처리가 정상 종료되지 않았습니다. 발생한 예외 목록: {}", exceptionSummary),
+                            failureExceptions.isEmpty() ? null : failureExceptions.get(0));
+                }
+
+                return StepExecutionListener.super.afterStep(stepExecution);
+            }
+        };
     }
 
 }
