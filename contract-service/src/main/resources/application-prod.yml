@@ -120,3 +120,9 @@ logging:
       read-timeout: 2000
       connection-timeout: 1000
       webhook-url: ${SLACK_WEBHOOK_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus # 운영 시 외부에서 볼 수 없도록 조치 필요
