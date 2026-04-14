@@ -1,6 +1,6 @@
 package com.example.contractservice.settlement.service;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -22,9 +22,9 @@ public class SettlementScheduledService {
         log.info("정산 스케줄링을 시작합니다.");
         try {
 
-            JobParameters jobParameters = new JobParametersBuilder()
-                    .addString("dateStr", Instant.now().toString())
-                    .toJobParameters();
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addLocalDate("dateStr", LocalDate.now())
+                .toJobParameters();
 
             jobLauncher.run(settlementJob, jobParameters);
         } catch (Exception e) {

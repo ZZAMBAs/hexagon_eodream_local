@@ -1,5 +1,7 @@
 package com.example.contractservice.settlement.service.mapper;
 
+import static java.time.ZoneOffset.UTC;
+
 import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.domain.vo.SettlementReference;
 import com.example.contractservice.settlement.domain.vo.SettlementStatusInfo;
@@ -8,6 +10,7 @@ import com.example.contractservice.settlement.entity.SettlementEntity;
 import com.example.contractservice.settlement.service.dto.request.SettlementSaveRequest;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -112,7 +115,11 @@ public abstract class SettlementMapper {
     }
 
     private static SettlementTimeline getTimeline(Instant curTime) {
-        return new SettlementTimeline(curTime);
+        return new SettlementTimeline(toProgressingDate(curTime));
+    }
+
+    private static LocalDate toProgressingDate(Instant curTime) {
+        return curTime.atZone(UTC).toLocalDate();
     }
 
     /** 월급을 계산합니다.

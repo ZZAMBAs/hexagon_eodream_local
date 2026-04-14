@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,7 +47,7 @@ public class SettlementEntity {
     private SettlementStatus status;
 
     @Column(name = "progressing_at", nullable = false)
-    private Instant progressingAt;
+    private LocalDate progressingAt;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -62,7 +63,7 @@ public class SettlementEntity {
 
     @Builder
     public SettlementEntity(Long id, String code, String receiverCode, String contractCode, Long originalAmount,
-            SettlementStatus status, Instant progressingAt, Instant createdAt) {
+            SettlementStatus status, LocalDate progressingAt, Instant createdAt) {
         this.id = id;
         this.code = code;
         this.receiverCode = receiverCode;

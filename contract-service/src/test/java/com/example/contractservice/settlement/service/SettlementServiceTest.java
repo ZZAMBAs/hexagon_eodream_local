@@ -12,7 +12,7 @@ import com.example.contractservice.settlement.repository.SettlementJpaRepository
 import com.example.contractservice.settlement.service.mapper.SettlementMapper;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -65,7 +65,7 @@ class SettlementServiceTest {
         SettlementEntity settlementEntity = SettlementEntity.builder()
                 .code(UUID.randomUUID().toString())
                 .receiverCode(memberCode)
-                .progressingAt(Instant.now().minus(1L, ChronoUnit.DAYS))
+                .progressingAt(LocalDate.now().minusDays(1L))
                 .contractCode(UUID.randomUUID().toString())
                 .originalAmount(originalAmount)
                 .createdAt(Instant.now())
@@ -105,7 +105,7 @@ class SettlementServiceTest {
             SettlementEntity settlementEntity = SettlementEntity.builder()
                     .code(UUID.randomUUID().toString())
                     .receiverCode(memberCode)
-                    .progressingAt(Instant.now().minus(1L, ChronoUnit.DAYS))
+                    .progressingAt(LocalDate.now().minusDays(1L))
                     .contractCode(UUID.randomUUID().toString())
                     .originalAmount(originalAmount)
                     .createdAt(Instant.now())

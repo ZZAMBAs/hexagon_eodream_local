@@ -1,14 +1,11 @@
 package com.example.contractservice.settlement.service.batch.reader;
 
-import static java.time.ZoneOffset.UTC;
-
 import com.example.contractservice.settlement.common.SettlementStatus;
 import com.example.contractservice.settlement.entity.SettlementEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -21,8 +18,6 @@ import org.springframework.stereotype.Component;
 @StepScope
 public class SettlementZeroOffsetItemReader extends JpaPagingItemReader<SettlementEntity> {
 
-    private static final long MONTH_INTERVAL = 1L;
-
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -30,7 +25,7 @@ public class SettlementZeroOffsetItemReader extends JpaPagingItemReader<Settleme
     private Map<String, Object> paramMap;
 
     public SettlementZeroOffsetItemReader(EntityManagerFactory emFactory,
-            @Value("#{jobParameters['dateStr']}") String dateStr,
+            @Value("#{jobParameters['dateStr']}") LocalDate dateStr,
             @Value("${batch.settlement.size}") int fetchSize) {
         setEntityManagerFactory(emFactory);
 
@@ -47,15 +42,10 @@ public class SettlementZeroOffsetItemReader extends JpaPagingItemReader<Settleme
         setPageSize(fetchSize);
         this.hintValues = Map.of("org.hibernate.fetchSize", fetchSize); // 하이버네이트에서 DB 레코드를 한 번에 가져오는 사이즈
 
-        Instant curInstant = Instant.parse(dateStr);
-        LocalDate endLocalDate = curInstant.atZone(UTC).toLocalDate(); // Instant -> LocalDate(년-월-일)
+        LocalDate endDate = dateStr;
+        LocalDate startDate = dateStr.minusMonths(1);
 
-        Instant endInstant = endLocalDate.atStartOfDay(UTC).toInstant(); // LocalDate(년-월-일) 자정 -> Instant
-        Instant startInstant = endLocalDate.minusMonths(MONTH_INTERVAL) // 한 달 전 LocalDate
-                .atStartOfDay().toInstant(UTC); // 한 달 전 자정 -> Instant
-
-
-        paramMap = Map.of("start", startInstant, "end", endInstant, "status", SettlementStatus.BEFORE);
+        paramMap = Map.of("start", startDate, "end", endDate, "status", SettlementStatus.BEFORE);
     }
 
     @Override

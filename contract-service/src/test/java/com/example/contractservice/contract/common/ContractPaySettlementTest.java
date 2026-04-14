@@ -22,6 +22,7 @@ import com.example.contractservice.settlement.service.SettlementService;
 import com.example.contractservice.settlement.service.mapper.SettlementMapper;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -141,7 +142,7 @@ class ContractPaySettlementTest {
                                 .receiverCode(userCode)
                                 .originalAmount(settlementOriginalAmount)
                                 .status(SettlementStatus.BEFORE)
-                                .progressingAt(Instant.now().minus(1L, ChronoUnit.DAYS))
+                                .progressingAt(LocalDate.now().minusDays(1L))
                                 .createdAt(Instant.now())
                                 .code(UUID.randomUUID().toString())
                                 .build())
