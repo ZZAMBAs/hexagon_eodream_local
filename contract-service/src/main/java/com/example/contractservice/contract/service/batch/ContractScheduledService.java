@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobExecutionException;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -22,7 +24,9 @@ public class ContractScheduledService {
     private final Job statusChangeJob;
 
     @Scheduled(cron = "${batch.contract.interval}")
-    public void changeStatus() {
+    public void changeStatus() throws JobExecutionException {
+        log.info("계약 상태 변경 배치를 시작합니다.");
+
         LocalDate curDate = Instant.now().atZone(UTC).toLocalDate(); // Instant -> LocalDate(년-월-일)
         Instant midnight = curDate.atStartOfDay(UTC).toInstant(); // LocalDate(년-월-일) 자정 -> Instant
 
@@ -32,12 +36,12 @@ public class ContractScheduledService {
 
         log.info("현재 날짜: {}", midnight);
 
-        try {
-            jobLauncher.run(statusChangeJob, jobParameters);
-        } catch (Exception e) {
-            log.warn("정산 배치 중 오류가 발생했습니다.", e);
-        }
+        JobExecution jobExecution = jobLauncher.run(statusChangeJob, jobParameters);
 
+        if (log.isDebugEnabled()) {
+            log.debug("스케줄링된 JobInstanceId: {}, 상태: {}", jobExecution.getJobInstance().getInstanceId(),
+                    jobExecution.getStatus());
+        }
     }
 
 }
