@@ -4,6 +4,7 @@ import com.example.contractservice.common.batch.listener.FailedStepLoggingListen
 import com.example.contractservice.contract.domain.Contract;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.service.batch.writer.ContractStatusWriter;
+import com.example.contractservice.contract.service.mapper.ContractMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecutionListener;
@@ -71,6 +72,7 @@ public class ContractStepConfig {
         return new StepBuilder(stepName, jobRepository)
                 .<ContractEntity, Contract>chunk(chunkSize, transactionManager)
                 .reader(reader)
+                .processor(ContractMapper::toDomain)
                 .writer(writer)
                 .faultTolerant()
                 .retry(DataAccessException.class)
