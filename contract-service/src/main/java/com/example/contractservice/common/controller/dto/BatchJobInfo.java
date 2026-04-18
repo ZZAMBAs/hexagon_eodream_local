@@ -1,4 +1,4 @@
-package com.example.contractservice.settlement.controller.dto;
+package com.example.contractservice.common.controller.dto;
 
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;

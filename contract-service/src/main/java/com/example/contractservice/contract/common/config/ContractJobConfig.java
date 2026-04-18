@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class ContractJobConfig {
+    public static final String CONTRACT_STATUS_CHANGE_JOB_NAME = "statusChangeJob";
+
     private final JobRepository jobRepository;
 
     private final Step contractToDoneBatchStep;
@@ -19,7 +21,7 @@ public class ContractJobConfig {
 
     @Bean
     public Job statusChangeJob() {
-        return new JobBuilder("statusChangeJob", jobRepository)
+        return new JobBuilder(CONTRACT_STATUS_CHANGE_JOB_NAME, jobRepository)
                 .start(contractToDoneBatchStep)
                 .next(contractToInProgressBatchStep)
                 .next(contractToCancelledBatchStep)
