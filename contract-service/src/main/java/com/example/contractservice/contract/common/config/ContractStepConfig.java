@@ -2,6 +2,7 @@ package com.example.contractservice.contract.common.config;
 
 import com.example.contractservice.common.batch.listener.FailedStepLoggingListener;
 import com.example.contractservice.contract.domain.Contract;
+import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.service.batch.writer.ContractStatusWriter;
 import com.example.contractservice.contract.service.mapper.ContractMapper;
@@ -76,6 +77,7 @@ public class ContractStepConfig {
                 .writer(writer)
                 .faultTolerant()
                 .retry(DataAccessException.class)
+                .retry(ContractException.class) // 배치 예외만 나타나기를 기대한다.
                 .retryLimit(RETRY_LIMIT)
                 .backOffPolicy(contractBackOffPolicy())
                 .listener(contractStepExecutionListener())
