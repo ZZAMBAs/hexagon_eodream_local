@@ -4,10 +4,14 @@ import static com.example.contractservice.contract.service.batch.ContractBatchTe
 import static com.example.contractservice.contract.service.batch.ContractBatchTestFixture.TARGET_MIDNIGHT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.example.contractservice.common.TestConfig;
 import com.example.contractservice.contract.common.ContractStatus;
+import com.example.contractservice.contract.domain.Contract;
+import com.example.contractservice.contract.domain.exception.ContractErrorCode;
+import com.example.contractservice.contract.domain.exception.ContractException;
 import com.example.contractservice.contract.entity.ContractEntity;
 import com.example.contractservice.contract.repository.ContractJpaRepository;
 import com.example.contractservice.contract.service.batch.reader.ContractInProgressReader;
@@ -139,9 +143,9 @@ class ContractBatchJobIntegrationTest {
     @DisplayName("writer는 계약 상태를 각각 DONE, IN_PROGRESS, CANCELLED로 변경한다")
     void success_writers_change_contract_statuses() throws Exception {
         // given
-        ContractEntity inProgress = fixtureData.inProgressExpiredContracts().get(0);
-        ContractEntity paid = fixtureData.paidDueContracts().get(0);
-        ContractEntity requested = fixtureData.requestedDueContracts().get(0);
+        ContractEntity inProgress = findContract(fixtureData.inProgressExpiredContracts().get(0));
+        ContractEntity paid = findContract(fixtureData.paidDueContracts().get(0));
+        ContractEntity requested = findContract(fixtureData.requestedDueContracts().get(0));
         StepExecution stepExecution = MetaDataInstanceFactory.createStepExecution(jobParameters());
 
         // when
@@ -164,6 +168,37 @@ class ContractBatchJobIntegrationTest {
                 ContractStatus.PAID);
         assertStatuses(fixtureData.requestedDueContracts().subList(1, fixtureData.requestedDueContracts().size()),
                 ContractStatus.REQUESTED);
+    }
+
+    @Test
+    @DisplayName("writer는 updated_at 충돌 시 배치 업데이트 실패 예외를 던진다")
+    void fail_writer_throws_when_updated_at_conflicts() {
+        // given
+        ContractEntity inProgress = findContract(fixtureData.inProgressExpiredContracts().get(0));
+        Contract staleContract = ContractMapper.toDomain(inProgress);
+        StepExecution stepExecution = MetaDataInstanceFactory.createStepExecution(jobParameters());
+
+        inProgress.updateInfo(
+                inProgress.getStartedAt(),
+                inProgress.getEndedAt(),
+                inProgress.getPaymentType(),
+                inProgress.getUnitAmount(),
+                inProgress.getStatus(),
+                inProgress.getName() + " 변경",
+                inProgress.getBody()
+        );
+        contractJpaRepository.save(inProgress);
+
+        // when & then
+        ContractException exception = assertThrows(ContractException.class, () ->
+                StepScopeTestUtils.doInStepScope(stepExecution, () -> {
+                    contractDoneWriter.write(new Chunk<>(List.of(staleContract)));
+                    return null;
+                })
+        );
+
+        assertEquals(ContractErrorCode.CONTRACT_BATCH_UPDATE_FAILED, exception.getErrorCode());
+        assertStatus(inProgress, ContractStatus.IN_PROGRESS);
     }
 
     private JobParameters jobParameters() {
@@ -191,6 +226,10 @@ class ContractBatchJobIntegrationTest {
 
     private ContractEntity save(ContractEntity contract) {
         return contractJpaRepository.save(contract);
+    }
+
+    private ContractEntity findContract(ContractEntity contract) {
+        return contractJpaRepository.findById(contract.getId()).orElseThrow();
     }
 
     private void assertStepCounts(JobExecution jobExecution) {
