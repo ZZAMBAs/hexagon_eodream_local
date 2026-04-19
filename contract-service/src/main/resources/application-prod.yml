@@ -25,7 +25,7 @@ spring:
 
   datasource:
     # TODO: 프로젝트 환경에 맞게 DB URL, Username, Password 수정 필요!!
-    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}?rewriteBatchedStatements=true&connectionTimeout=3000&socketTimeout=10000
+    url: jdbc:mysql://${MYSQL_HOST}:3306/${MYSQL_DATABASE}?rewriteBatchedStatements=true&connectionTimeout=3000&socketTimeout=10000&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
@@ -103,7 +103,7 @@ batch:
     settlement-rate: 0.125
     interval: 0 0 3 15 * ? # 매월 15일 새벽 3시
   contract:
-    size: 500
+    size: 100
     interval:  0 0 0 * * ?
 
 admin:
