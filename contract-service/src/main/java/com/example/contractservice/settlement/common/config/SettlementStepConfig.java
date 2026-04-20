@@ -42,7 +42,6 @@ public class SettlementStepConfig {
                 .processor(settlementDataProcessor)
                 .writer(settlementCustomWriter)
                 .faultTolerant()
-                .retry(OptimisticLockingFailureException.class)
                 .retry(DataAccessException.class)
                 .retryLimit(RETRY_LIMIT)
                 .backOffPolicy(backOffPolicy())
