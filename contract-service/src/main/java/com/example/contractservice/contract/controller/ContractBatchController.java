@@ -6,6 +6,8 @@ import static java.time.ZoneOffset.UTC;
 import com.example.contractservice.common.controller.batch.BatchJobMapper;
 import com.example.contractservice.common.controller.batch.BatchJobQuerySupport;
 import com.example.contractservice.common.controller.dto.BatchJobInfo;
+import com.example.contractservice.contract.common.swagger.annotation.GetContractBatchInfoApi;
+import com.example.contractservice.contract.common.swagger.annotation.RunContractBatchApi;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ public class ContractBatchController {
     private final BatchJobQuerySupport batchJobQuerySupport;
     private final BatchJobMapper batchJobMapper;
 
+    @RunContractBatchApi
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseDto<BatchJobInfo> processManually(@RequestParam("date") LocalDate date)
@@ -45,6 +48,7 @@ public class ContractBatchController {
         return ResponseDto.success(batchJobMapper.toInfo(jobExecution));
     }
 
+    @GetContractBatchInfoApi
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<BatchJobInfo> getRunningJobInfo(

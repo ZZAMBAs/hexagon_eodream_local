@@ -5,6 +5,8 @@ import static com.example.contractservice.settlement.common.config.SettlementJob
 import com.example.contractservice.common.controller.batch.BatchJobMapper;
 import com.example.contractservice.common.controller.batch.BatchJobQuerySupport;
 import com.example.contractservice.common.controller.dto.BatchJobInfo;
+import com.example.contractservice.settlement.common.swagger.annotation.GetSettlementBatchInfoApi;
+import com.example.contractservice.settlement.common.swagger.annotation.RunSettlementBatchApi;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.hexagon.core.dto.ResponseDto;
@@ -34,6 +36,7 @@ public class SettlementBatchController {
     private final BatchJobQuerySupport batchJobQuerySupport;
     private final BatchJobMapper batchJobMapper;
 
+    @RunSettlementBatchApi
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseDto<BatchJobInfo> processManually(@RequestParam("date") LocalDate date)
@@ -43,6 +46,7 @@ public class SettlementBatchController {
         return ResponseDto.success(batchJobMapper.toInfo(jobExecution));
     }
 
+    @GetSettlementBatchInfoApi
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<BatchJobInfo> getRunningJobInfo(
