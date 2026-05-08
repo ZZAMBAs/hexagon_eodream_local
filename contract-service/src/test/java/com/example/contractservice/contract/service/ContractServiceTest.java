@@ -55,6 +55,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
@@ -75,6 +77,10 @@ class ContractServiceTest {
     MemberClient memberClient;
     @MockitoBean
     CommissionClient commissionClient;
+    @MockitoBean
+    KafkaTemplate<String, String> kafkaTemplate;
+    @MockitoBean
+    KafkaAdmin kafkaAdmin;
 
     @Value("${admin.member.code}")
     String adminMemberCode;

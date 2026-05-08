@@ -1,6 +1,6 @@
 package com.example.contractservice.settlement.common.config;
 
-import com.example.contractservice.deposit.domain.exception.DepositException;
+import com.example.contractservice.common.batch.listener.FailedStepLoggingListener;
 import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.entity.SettlementEntity;
 import com.example.contractservice.settlement.service.batch.processor.SettlementDataProcessor;
@@ -8,11 +8,13 @@ import com.example.contractservice.settlement.service.batch.reader.SettlementZer
 import com.example.contractservice.settlement.service.batch.writer.SettlementCustomWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -40,11 +42,10 @@ public class SettlementStepConfig {
                 .processor(settlementDataProcessor)
                 .writer(settlementCustomWriter)
                 .faultTolerant()
-                .retry(DepositException.class)
-                .retry(OptimisticLockingFailureException.class)
+                .retry(DataAccessException.class)
                 .retryLimit(RETRY_LIMIT)
                 .backOffPolicy(backOffPolicy())
-                // .listener() // TODO: 재시도 실패 후 리스너 추가. FAILED에 대한 로깅 처리 필요(FAILED는 정산하지 않음)
+                .listener(settlementStepExecutionListener())
                 .build();
     }
 
@@ -56,6 +57,11 @@ public class SettlementStepConfig {
         policy.setMaxInterval(10000L);
 
         return policy;
+    }
+
+    @Bean
+    public StepExecutionListener settlementStepExecutionListener() {
+        return new FailedStepLoggingListener("정산 배치 처리");
     }
 
 }

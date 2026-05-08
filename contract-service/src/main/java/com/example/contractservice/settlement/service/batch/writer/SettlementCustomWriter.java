@@ -8,7 +8,6 @@ import com.example.contractservice.deposit.repository.DepositRepository;
 import com.example.contractservice.deposit.repository.batch.DepositBatchRepository;
 import com.example.contractservice.settlement.domain.Settlement;
 import com.example.contractservice.settlement.repository.batch.SettlementBatchRepository;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,24 +31,23 @@ public class SettlementCustomWriter implements ItemWriter<Settlement> {
     private final DepositRepository depositRepository;
     private final DepositBatchRepository depositBatchRepository;
 
-    @Value("${batch.settlement.settlement-rate}")
-    private BigDecimal settlementRate;
     @Value("${admin.member.code}")
     private String adminMemberCode;
 
     @Override
     public void write(@NonNull Chunk<? extends Settlement> chunk) {
-        log.info("write 시작!");
         List<Settlement> settlements = (List<Settlement>) chunk.getItems();
 
         Map<String, Deposit> memberDepositMap = new HashMap<>(); // 벌크 처리할 예치금 데이터
         List<DepositHistory> depositHistories = new ArrayList<>(); // 벌크 처리할 예치금 히스토리
 
-        initAdmin(memberDepositMap);
+        putAdminDeposit(memberDepositMap);
         Deposit adminDeposit = memberDepositMap.get(adminMemberCode);
 
         for (Settlement settlement : settlements) {
-            settlement.settle(settlementRate);
+            if (settlement.isFailed()) {
+                continue;
+            }
 
             String receiverCode = settlement.getSettlementReference().receiverCode();
             Deposit receiverDeposit = getReceiverDeposit(receiverCode, memberDepositMap);
@@ -60,8 +58,6 @@ public class SettlementCustomWriter implements ItemWriter<Settlement> {
         settlementBatchRepository.updateAllInBatch(settlements);
         depositBatchRepository.updateAllDeposits(memberDepositMap);
         depositBatchRepository.saveAllHistories(depositHistories);
-
-        log.info("write 종료!");
     }
 
     private void wireTransferToReceiver(Deposit adminDeposit, Deposit receiverDeposit, Settlement settlement, List<DepositHistory> depositHistories) {
@@ -77,12 +73,12 @@ public class SettlementCustomWriter implements ItemWriter<Settlement> {
     }
 
     private Deposit getReceiverDeposit(String receiverCode, Map<String, Deposit> memberDepositMap) {
-        memberDepositMap.computeIfAbsent(receiverCode, depositRepository::findDepositByMemberCode);
+        memberDepositMap.computeIfAbsent(receiverCode, depositRepository::findDepositByMemberCodeForUpdate);
 
         return memberDepositMap.get(receiverCode);
     }
 
-    private void initAdmin(Map<String, Deposit> memberDepositMap) {
-        memberDepositMap.put(adminMemberCode, depositRepository.findDepositByMemberCode(adminMemberCode));
+    private void putAdminDeposit(Map<String, Deposit> memberDepositMap) {
+        memberDepositMap.put(adminMemberCode, depositRepository.findDepositByMemberCodeForUpdate(adminMemberCode));
     }
 }

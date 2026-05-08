@@ -22,4 +22,8 @@ public record SettlementStatusInfo(
 
         return new SettlementStatusInfo(originalAmount, originalAmount - calculatedFeeAmount, DONE, settlementRate);
     }
+
+    public SettlementStatusInfo fail() {
+        return new SettlementStatusInfo(originalAmount, null, FAILED, null);
+    }
 }

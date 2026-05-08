@@ -27,7 +27,7 @@ class DomainExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("SettlementException ? ?꾨찓???덉쇅 ?묐떟?쇰줈 留ㅽ븨?쒕떎")
+    @DisplayName("SettlementException이 발생했을 때 제대로 BAD_REQUEST 응답을 받을 수 있다")
     void map_settlement_exception_to_domain_error_response() throws Exception {
         mockMvc.perform(get("/settlement-exception-test"))
                 .andExpect(status().isBadRequest())

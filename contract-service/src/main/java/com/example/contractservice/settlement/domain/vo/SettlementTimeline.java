@@ -1,24 +1,28 @@
 package com.example.contractservice.settlement.domain.vo;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 public record SettlementTimeline(
     Instant createdAt,
     Instant settledAt,
-    Instant progressingAt
+    LocalDate progressingAt,
+    Instant failedAt
 ) {
 
-    public SettlementTimeline(Instant progressingAt) {
+    public SettlementTimeline(LocalDate progressingAt) {
         this(null, null, progressingAt);
     }
 
-    public SettlementTimeline(Instant createdAt, Instant settledAt, Instant progressingAt) {
-        this.createdAt = (createdAt == null) ? Instant.now() : createdAt;
-        this.settledAt = settledAt;
-        this.progressingAt = progressingAt;
+    public SettlementTimeline(Instant createdAt, Instant settledAt, LocalDate progressingAt) {
+        this((createdAt == null) ? Instant.now() : createdAt, settledAt, progressingAt, null);
     }
 
-    public SettlementTimeline updateSettledAt(Instant curSettledAt) {
-        return new SettlementTimeline(createdAt, curSettledAt, progressingAt);
+    public SettlementTimeline settle() {
+        return new SettlementTimeline(createdAt, Instant.now(), progressingAt);
+    }
+
+    public SettlementTimeline fail() {
+        return new SettlementTimeline(createdAt, settledAt, progressingAt, Instant.now());
     }
 }

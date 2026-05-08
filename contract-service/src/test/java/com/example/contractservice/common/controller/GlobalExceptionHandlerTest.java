@@ -33,7 +33,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("MethodArgumentNotValidException ? HTTP 400 ?쇰줈 ?묐떟?쒕떎")
+    @DisplayName("MethodArgumentNotValidException 발생 시, BAD_REQUEST 응답을 받을 수 있다")
     void return_bad_request_for_method_argument_not_valid_exception() throws Exception {
         mockMvc.perform(post("/validation-test")
                         .contentType(APPLICATION_JSON)

@@ -8,11 +8,7 @@ import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DeadlockLoserDataAccessException;
-import org.springframework.dao.PessimisticLockingFailureException;
-import org.springframework.dao.QueryTimeoutException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 

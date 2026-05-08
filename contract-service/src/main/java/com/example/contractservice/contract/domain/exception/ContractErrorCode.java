@@ -22,6 +22,7 @@ public class ContractErrorCode extends DomainErrorCode {
 
     public static final ContractErrorCode CANCEL_NOT_AVAILABLE;
     public static final ContractErrorCode COMMISSION_NOT_AVAILABLE;
+    public static final ContractErrorCode CONTRACT_BATCH_UPDATE_FAILED;
 
     static {
         NOT_FREELANCER = new ContractErrorCode(HttpStatus.BAD_REQUEST, 4000, "프리랜서가 아닙니다. 역할을 확인해 주세요.");
@@ -42,6 +43,8 @@ public class ContractErrorCode extends DomainErrorCode {
 
         CANCEL_NOT_AVAILABLE = new ContractErrorCode(HttpStatus.BAD_REQUEST, 4050, "취소할 수 있는 계약의 상태가 아닙니다.");
         COMMISSION_NOT_AVAILABLE = new ContractErrorCode(HttpStatus.BAD_REQUEST, 4051, "관련 의뢰글이 존재하지 않거나 마감되었습니다.");
+
+        CONTRACT_BATCH_UPDATE_FAILED = new ContractErrorCode(HttpStatus.INTERNAL_SERVER_ERROR, 4060, "계약 상태 배치 업데이트 중 갱신되지 않은 데이터가 존재합니다.");
     }
 
     private ContractErrorCode(HttpStatus httpStatusCode, int statusCode, String message) {
