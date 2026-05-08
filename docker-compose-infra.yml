@@ -112,8 +112,11 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=1234
     ports:
       - "3001:3000" # 리액트와 포트 겹침 방지
+    volumes:
+      - grafana_data:/var/lib/grafana
 
 volumes:
   mysql_data:
   mongo_data:
   elasticsearch_data:
+  grafana_data:
